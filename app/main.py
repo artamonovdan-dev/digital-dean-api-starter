@@ -1,19 +1,16 @@
+"""Точка входу застосунку «Цифровий деканат»."""
+
 from fastapi import FastAPI
 
-from app.api.students import router as students_router
+from app.api import students
 
-
-app = FastAPI(
-    title="Digital Dean API",
-    version="0.1.0",
-    description="Навчальний API системи «Цифровий деканат»",
-)
+app = FastAPI(title="Digital Dean API", version="0.1.0")
 
 
 @app.get("/health", tags=["system"])
 def health() -> dict[str, str]:
-    """Повертає ознаку готовності навчального застосунку."""
+    """Перевірка готовності застосунку (залежностей у першій версії немає)."""
     return {"status": "ok"}
 
 
-app.include_router(students_router)
+app.include_router(students.router, prefix="/api/v1")
