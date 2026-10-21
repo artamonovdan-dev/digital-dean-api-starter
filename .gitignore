@@ -1,12 +1,30 @@
+# Віртуальне середовище
 .venv/
+venv/
+env/
+
+# Кеші Python і тестів
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
 .coverage
 htmlcov/
+
+# Збірка пакета
+*.egg-info/
+build/
+dist/
+
+# Секрети та локальні налаштування
+.env
+.env.*
+*.pem
+*.key
+
+# IDE / ОС
 .idea/
 .vscode/
 .DS_Store
-.env
-*.pem
-*.key
+Thumbs.db
