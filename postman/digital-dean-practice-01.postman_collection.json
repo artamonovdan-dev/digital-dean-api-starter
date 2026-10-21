@@ -1,43 +1,75 @@
 {
   "info": {
-    "_postman_id": "dc000001-0000-4000-8000-000000000001",
     "name": "Digital Dean — Practice 01",
-    "description": "Послідовна перевірка базового API системи «Цифровий деканат». Перед повторним повним запуском перезапустіть сервер або змініть email у запиті створення.",
+    "description": "Перевірка базового API «Цифровий деканат». Запускайте запити по порядку 01→10.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "variable": [
-    {
-      "key": "base_url",
-      "value": "http://127.0.0.1:8000"
-    },
-    {
-      "key": "student_id",
-      "value": ""
-    }
-  ],
   "item": [
     {
-      "name": "01 Health",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": "{{base_url}}/health"
-      },
+      "name": "01 GET /health",
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('status is 200', () => pm.response.to.have.status(200));",
-              "pm.test('service is ready', () => pm.expect(pm.response.json()).to.eql({status: 'ok'}));"
+              "pm.test(\"status is 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"body is {status: ok}\", () => pm.expect(pm.response.json()).to.eql({ status: \"ok\" }));"
             ]
           }
         }
-      ]
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "health"
+          ]
+        }
+      }
     },
     {
-      "name": "02 Create student",
+      "name": "02 POST /api/v1/students — створення",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Унікальна синтетична адреса: колекцію можна проганяти повторно без перезапуску сервера.",
+              "pm.collectionVariables.set(\"email\", \"olena.koval.\" + Date.now() + \"@example.com\");"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"status is 201\", () => {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "pm.test(\"response has id\", () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.id).to.be.a(\"string\");",
+              "  pm.collectionVariables.set(\"student_id\", body.id);",
+              "});",
+              "pm.test(\"all client fields returned\", () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.full_name).to.eql(\"Олена Коваль\");",
+              "  pm.expect(body.email).to.eql(pm.collectionVariables.get(\"email\"));",
+              "  pm.expect(body.group_code).to.eql(\"КН-31\");",
+              "  pm.expect(body.enrollment_year).to.eql(2024);",
+              "});"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [
@@ -46,92 +78,151 @@
             "value": "application/json"
           }
         ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/students",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "students"
+          ]
+        },
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"full_name\": \"Олена Коваль\",\n  \"email\": \"olena.koval@example.com\",\n  \"group_code\": \"КН-31\",\n  \"study_program\": \"Комп'ютерні науки\"\n}",
+          "raw": "{\n  \"full_name\": \"Олена Коваль\",\n  \"email\": \"{{email}}\",\n  \"group_code\": \"КН-31\",\n  \"enrollment_year\": 2024\n}",
           "options": {
             "raw": {
               "language": "json"
             }
           }
-        },
-        "url": "{{base_url}}/api/v1/students"
-      },
+        }
+      }
+    },
+    {
+      "name": "03 GET /api/v1/students — список",
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('status is 201', () => pm.response.to.have.status(201));",
-              "pm.test('response has id', () => pm.expect(pm.response.json().id).to.be.a('string'));",
-              "if (pm.response.code === 201) { pm.collectionVariables.set('student_id', pm.response.json().id); }"
+              "pm.test(\"status is 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"body is array with created record\", () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body).to.be.an(\"array\");",
+              "  const id = pm.collectionVariables.get(\"student_id\");",
+              "  pm.expect(body.some((s) => s.id === id)).to.be.true;",
+              "});"
             ]
           }
         }
-      ]
-    },
-    {
-      "name": "03 List students",
+      ],
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{base_url}}/api/v1/students"
-      },
+        "url": {
+          "raw": "{{base_url}}/api/v1/students",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "students"
+          ]
+        }
+      }
+    },
+    {
+      "name": "04 GET /api/v1/students/{id}",
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('status is 200', () => pm.response.to.have.status(200));",
-              "pm.test('body is an array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+              "pm.test(\"status is 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"id matches\", () => {",
+              "  pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get(\"student_id\"));",
+              "});"
             ]
           }
         }
-      ]
-    },
-    {
-      "name": "04 Get created student",
+      ],
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{base_url}}/api/v1/students/{{student_id}}"
-      },
+        "url": {
+          "raw": "{{base_url}}/api/v1/students/{{student_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "students",
+            "{{student_id}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "05 GET /api/v1/students/{missing} — 404",
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('status is 200', () => pm.response.to.have.status(200));",
-              "pm.test('id matches', () => pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get('student_id')));"
+              "pm.test(\"status is 404\", () => pm.response.to.have.status(404));",
+              "pm.test(\"controlled error without stack trace\", () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.detail.code).to.eql(\"student_not_found\");",
+              "  pm.expect(pm.response.text()).to.not.include(\"Traceback\");",
+              "});"
             ]
           }
         }
-      ]
-    },
-    {
-      "name": "05 Get missing student",
+      ],
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{base_url}}/api/v1/students/00000000-0000-4000-8000-000000000000"
-      },
+        "url": {
+          "raw": "{{base_url}}/api/v1/students/{{missing_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "students",
+            "{{missing_id}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "06 PATCH /api/v1/students/{id} — одне поле",
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('status is 404', () => pm.response.to.have.status(404));"
+              "pm.test(\"status is 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"only group_code changed\", () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.group_code).to.eql(\"КН-32\");",
+              "  pm.expect(body.full_name).to.eql(\"Олена Коваль\");",
+              "  pm.expect(body.email).to.eql(pm.collectionVariables.get(\"email\"));",
+              "  pm.expect(body.id).to.eql(pm.collectionVariables.get(\"student_id\"));",
+              "});"
             ]
           }
         }
-      ]
-    },
-    {
-      "name": "06 Patch group code",
+      ],
       "request": {
         "method": "PATCH",
         "header": [
@@ -140,6 +231,18 @@
             "value": "application/json"
           }
         ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/students/{{student_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "students",
+            "{{student_id}}"
+          ]
+        },
         "body": {
           "mode": "raw",
           "raw": "{\n  \"group_code\": \"КН-32\"\n}",
@@ -148,24 +251,25 @@
               "language": "json"
             }
           }
-        },
-        "url": "{{base_url}}/api/v1/students/{{student_id}}"
-      },
+        }
+      }
+    },
+    {
+      "name": "07 POST /api/v1/students — пошкоджений JSON",
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('status is 200', () => pm.response.to.have.status(200));",
-              "pm.test('group changed', () => pm.expect(pm.response.json().group_code).to.eql('КН-32'));"
+              "pm.test(\"status is 422\", () => pm.response.to.have.status(422));",
+              "pm.test(\"rejected as JSON error\", () => {",
+              "  pm.expect(pm.response.json().detail[0].type).to.eql(\"json_invalid\");",
+              "});"
             ]
           }
         }
-      ]
-    },
-    {
-      "name": "07 Reject malformed JSON",
+      ],
       "request": {
         "method": "POST",
         "header": [
@@ -174,31 +278,44 @@
             "value": "application/json"
           }
         ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/students",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "students"
+          ]
+        },
         "body": {
           "mode": "raw",
-          "raw": "{\"full_name\": \"Незавершений документ\"",
+          "raw": "{\n  \"full_name\": \"Олена Коваль\",\n  \"email\": ",
           "options": {
             "raw": {
-              "language": "text"
+              "language": "json"
             }
           }
-        },
-        "url": "{{base_url}}/api/v1/students"
-      },
+        }
+      }
+    },
+    {
+      "name": "08 PATCH /api/v1/students/{id} — is_admin",
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('status is 422', () => pm.response.to.have.status(422));"
+              "pm.test(\"status is 422\", () => pm.response.to.have.status(422));",
+              "pm.test(\"unknown field rejected\", () => {",
+              "  pm.expect(pm.response.json().detail[0].type).to.eql(\"extra_forbidden\");",
+              "});"
             ]
           }
         }
-      ]
-    },
-    {
-      "name": "08 Reject unknown field",
+      ],
       "request": {
         "method": "PATCH",
         "header": [
@@ -207,6 +324,18 @@
             "value": "application/json"
           }
         ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/students/{{student_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "students",
+            "{{student_id}}"
+          ]
+        },
         "body": {
           "mode": "raw",
           "raw": "{\n  \"is_admin\": true\n}",
@@ -215,28 +344,32 @@
               "language": "json"
             }
           }
-        },
-        "url": "{{base_url}}/api/v1/students/{{student_id}}"
-      },
+        }
+      }
+    },
+    {
+      "name": "09 GET /api/v1/students?enrollment_year=... — фільтр варіанта",
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('status is 422', () => pm.response.to.have.status(422));"
+              "pm.test(\"status is 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"every item matches filter\", () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body).to.be.an(\"array\").that.is.not.empty;",
+              "  body.forEach((s) => pm.expect(s.enrollment_year).to.eql(2024));",
+              "});"
             ]
           }
         }
-      ]
-    },
-    {
-      "name": "09 Filter by study program",
+      ],
       "request": {
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{base_url}}/api/v1/students?study_program=Комп'ютерні%20науки",
+          "raw": "{{base_url}}/api/v1/students?enrollment_year=2024",
           "host": [
             "{{base_url}}"
           ],
@@ -247,27 +380,29 @@
           ],
           "query": [
             {
-              "key": "study_program",
-              "value": "Комп'ютерні науки"
+              "key": "enrollment_year",
+              "value": "2024"
             }
           ]
         }
-      },
+      }
+    },
+    {
+      "name": "10 POST /api/v1/students — повторна email",
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('status is 200', () => pm.response.to.have.status(200));",
-              "pm.test('all records match filter', () => { const rows = pm.response.json(); pm.expect(rows.every(x => x.study_program === \"Комп'ютерні науки\")).to.be.true; });"
+              "pm.test(\"status is 409\", () => pm.response.to.have.status(409));",
+              "pm.test(\"conflict detected\", () => {",
+              "  pm.expect(pm.response.json().detail.code).to.eql(\"email_conflict\");",
+              "});"
             ]
           }
         }
-      ]
-    },
-    {
-      "name": "10 Reject duplicate email",
+      ],
       "request": {
         "method": "POST",
         "header": [
@@ -276,28 +411,45 @@
             "value": "application/json"
           }
         ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/students",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "students"
+          ]
+        },
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"full_name\": \"Інший Студент\",\n  \"email\": \"olena.koval@example.com\",\n  \"group_code\": \"КН-22\",\n  \"study_program\": \"Комп'ютерні науки\"\n}",
+          "raw": "{\n  \"full_name\": \"Олена Коваль\",\n  \"email\": \"{{email}}\",\n  \"group_code\": \"КН-31\",\n  \"enrollment_year\": 2024\n}",
           "options": {
             "raw": {
               "language": "json"
             }
           }
-        },
-        "url": "{{base_url}}/api/v1/students"
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('status is 409', () => pm.response.to.have.status(409));"
-            ]
-          }
         }
-      ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "student_id",
+      "value": ""
+    },
+    {
+      "key": "email",
+      "value": ""
+    },
+    {
+      "key": "missing_id",
+      "value": "00000000-0000-4000-8000-000000000000"
     }
   ]
 }
