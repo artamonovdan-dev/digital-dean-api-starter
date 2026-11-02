@@ -1,4 +1,4 @@
-# Digital Dean API — практична робота 1
+# Digital Dean API — практичні роботи 1 і 2
 
 Навчальний API інформаційної системи «Цифровий деканат» (FastAPI + Pydantic 2).
 Лише синтетичні дані; сховище в пам'яті — дані зникають після перезапуску.
@@ -60,3 +60,59 @@ python -m uvicorn app.main:app --reload
 - Унікальність e-mail перевіряється і при оновленні (поточний запис виключено з порівняння).
 - Клієнт не отримує трасування стека чи внутрішню структуру сховища.
 - Немає автентифікації, авторизації, HTTPS, постійного сховища — це теми наступних робіт.
+
+---
+
+# Практична робота 2 — симетричне шифрування службових приміток
+
+**Індивідуальний варіант роботи 2: 1 — категорія примітки** (`category`: `general`, `academic`, `administrative`).
+
+## Встановлення, запуск, тести, вимірювання
+
+```bash
+python -m pip install -e ".[dev]"          # додає cryptography==48.0.1 і pycryptodome==3.24.0
+python -m pytest                           # усі тести робіт 1 і 2
+python -m uvicorn app.main:app --reload --host 127.0.0.1   # один процес, без --workers
+python -m benchmarks.crypto_benchmark --output-dir results/practice-02
+python -m benchmarks.plot_results --input results/practice-02/report.json
+```
+
+`--reload` і будь-який перезапуск створюють новий ключ і порожнє сховище приміток.
+
+## Нові операції (префікс /api/v1)
+
+| Метод | Шлях | Успіх | Помилки | Результат |
+|---|---|---|---|---|
+| POST | /students/{student_id}/secure-notes | 201 | 404, 422, 503 | id, student_id, algorithm, category; без text, ключа й конверта |
+| GET | /students/{student_id}/secure-notes/{note_id} | 200 | 404, 422, 500 | id, student_id, algorithm, category, перевірений text |
+| GET | /lab/crypto/benchmark-results | 200 | 404, 500 | Валідований `results/practice-02/report.json` |
+
+- Тіло POST: `{"text": "...", "category": "academic"}`; `category` необов'язкове (типово `general`).
+- 422: порожній текст або лише пробіли, понад 4096 байтів UTF-8, невідоме поле (`key`, `nonce`, `algorithm`…), невідома категорія, неправильний UUID.
+- 404: невідомий студент, невідома примітка або примітка іншого студента.
+- 500 `{"detail": "Protected note unavailable"}`: пошкоджений чи підмінений серверний конверт, невідомий ключ, інша версія формату.
+- 503 `{"detail": "Protected note unavailable"}`: вичерпано навчальну межу використання ключа (1 000 000 записів); старі примітки читаються далі.
+- Звіт: 404 / 500 `{"detail": "Benchmark results unavailable"}`; шлях задає конфігурація, не клієнт.
+
+## Внутрішній зашифрований запис
+
+`version=1, student_id, note_id, algorithm=AES-256-GCM, backend=cryptography, key_id, nonce (12 Б), ciphertext, tag (16 Б), category`.
+Поля `text` і `key` не зберігаються. Асоційовані дані (канонічний JSON): `version, student_id, note_id, algorithm, key_id, category`.
+
+## Компоненти
+
+| Файл | Відповідальність |
+|---|---|
+| `app/security/profiles.py` | профілі AES-128-GCM, AES-256-GCM, ChaCha20-Poly1305; перевірка довжин |
+| `app/security/adapters.py` | `seal_bytes` / `open_bytes` для cryptography і PyCryptodome, `CiphertextError` |
+| `app/security/context.py` | канонічні асоційовані дані (з category) |
+| `app/security/nonce.py` | `NonceSequence`: 12-байтовий лічильник під `Lock`, межа використання |
+| `app/security/keys.py` | один ключ AES-256 і один лічильник на процес (`get_process_key`) |
+| `app/repositories/secure_note_repository.py` | сховище конвертів у пам'яті |
+| `app/api/secure_notes.py`, `app/api/crypto_lab.py` | маршрути |
+| `benchmarks/crypto_benchmark.py`, `benchmarks/plot_results.py` | вимірювання, графіки, таблиця |
+
+## Межі
+
+Сховище й ключ існують лише в пам'яті одного процесу. Немає автентифікації користувача, авторизації та HTTPS.
+Шифрування поля не захищає від захоплення процесу і не контролює повторну видачу старого конверта.

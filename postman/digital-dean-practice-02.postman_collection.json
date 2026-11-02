@@ -1,128 +1,519 @@
 {
   "info": {
     "_postman_id": "dc000002-0000-4000-8000-000000000002",
-    "name": "Digital Dean — Practice 02",
-    "description": "Виконуйте запити послідовно після реалізації API. Дані вигадані. У запиті створення студента адаптуйте study_program до власного варіанта роботи 1. За потреби додайте дозволену category до примітки для свого варіанта роботи 2. Звіт читається лише після локального запуску вимірювань. Відхилення підміни серверного конверта перевіряється автоматизованими тестами, не відкритим HTTP-маршрутом.",
+    "name": "Digital Dean — Practice 02 (variant 1: category)",
+    "description": "Виконуйте запити послідовно (Run collection). Дані вигадані. Робота 1: варіант enrollment_year. Робота 2: варіант 1 — поле category (general, academic, administrative). Запит 08 потребує попереднього запуску python -m benchmarks.crypto_benchmark --output-dir results/practice-02. Підміна серверного конверта перевіряється автоматизованими тестами, не HTTP-маршрутом.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    {"key": "base_url", "value": "http://127.0.0.1:8000"},
-    {"key": "student_id", "value": ""},
-    {"key": "note_id", "value": ""},
-    {"key": "note_text", "value": "  Навчальна примітка про індивідуальний план  "}
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "student_id",
+      "value": ""
+    },
+    {
+      "key": "other_student_id",
+      "value": ""
+    },
+    {
+      "key": "note_id",
+      "value": ""
+    },
+    {
+      "key": "note_text",
+      "value": "  Навчальна примітка про індивідуальний план  "
+    }
   ],
   "item": [
     {
       "name": "01 Health",
-      "request": {"method": "GET", "header": [], "url": "{{base_url}}/health"},
-      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
-        "pm.test('status is 200', () => pm.response.to.have.status(200));",
-        "pm.test('service is ready', () => pm.expect(pm.response.json()).to.eql({status: 'ok'}));"
-      ]}}]
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('service is ready', () => pm.expect(pm.response.json()).to.eql({status: 'ok'}));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/health"
+      }
     },
     {
       "name": "02 Create synthetic student",
       "event": [
-        {"listen": "prerequest", "script": {"type": "text/javascript", "exec": [
-          "pm.collectionVariables.set('student_id', '');",
-          "pm.collectionVariables.set('note_id', '');"
-        ]}},
-        {"listen": "test", "script": {"type": "text/javascript", "exec": [
-          "pm.test('status is 201', () => pm.response.to.have.status(201));",
-          "pm.test('response has id', () => pm.expect(pm.response.json().id).to.be.a('string'));",
-          "if (pm.response.code === 201) pm.collectionVariables.set('student_id', pm.response.json().id);"
-        ]}}
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('student_id', '');",
+              "pm.collectionVariables.set('note_id', '');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 201', () => pm.response.to.have.status(201));",
+              "pm.test('practice 1 variant field is kept', () => pm.expect(pm.response.json().enrollment_year).to.eql(2024));",
+              "if (pm.response.code === 201) pm.collectionVariables.set('student_id', pm.response.json().id);"
+            ]
+          }
+        }
       ],
       "request": {
-        "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}],
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
         "url": "{{base_url}}/api/v1/students",
-        "body": {"mode": "raw", "raw": "{\n  \"full_name\": \"Олена Коваль\",\n  \"email\": \"practice02-{{$guid}}@example.com\",\n  \"group_code\": \"КН-31\",\n  \"study_program\": \"Комп'ютерні науки\"\n}", "options": {"raw": {"language": "json"}}}
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Олена Коваль\",\n  \"email\": \"practice02-{{$guid}}@example.com\",\n  \"group_code\": \"КН-31\",\n  \"enrollment_year\": 2024\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
       }
     },
     {
-      "name": "03 Create protected note",
+      "name": "03 Create protected note (category academic)",
       "event": [
-        {"listen": "prerequest", "script": {"type": "text/javascript", "exec": [
-          "if (!pm.collectionVariables.get('student_id')) throw new Error('Create student first');"
-        ]}},
-        {"listen": "test", "script": {"type": "text/javascript", "exec": [
-          "pm.test('note metadata without internal fields', () => {",
-          "  pm.response.to.have.status(201);",
-          "  const body = pm.response.json();",
-          "  pm.expect(body.id).to.be.a('string');",
-          "  pm.expect(body.student_id).to.eql(pm.collectionVariables.get('student_id'));",
-          "  pm.expect(body.algorithm).to.eql('AES-256-GCM');",
-          "  ['text', 'key', 'key_id', 'nonce', 'ciphertext', 'tag'].forEach(field => pm.expect(body).not.to.have.property(field));",
-          "});",
-          "if (pm.response.code === 201) pm.collectionVariables.set('note_id', pm.response.json().id);"
-        ]}}
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (!pm.collectionVariables.get('student_id')) throw new Error('Create student first');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('note metadata without internal fields', () => {",
+              "  pm.response.to.have.status(201);",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.id).to.be.a('string');",
+              "  pm.expect(body.student_id).to.eql(pm.collectionVariables.get('student_id'));",
+              "  pm.expect(body.algorithm).to.eql('AES-256-GCM');",
+              "  pm.expect(body.category).to.eql('academic');",
+              "  ['text', 'key', 'key_id', 'nonce', 'ciphertext', 'tag'].forEach(field => pm.expect(body).not.to.have.property(field));",
+              "});",
+              "if (pm.response.code === 201) pm.collectionVariables.set('note_id', pm.response.json().id);"
+            ]
+          }
+        }
       ],
       "request": {
-        "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}],
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
         "url": "{{base_url}}/api/v1/students/{{student_id}}/secure-notes",
-        "body": {"mode": "raw", "raw": "{\n  \"text\": \"{{note_text}}\"\n}", "options": {"raw": {"language": "json"}}}
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"{{note_text}}\",\n  \"category\": \"academic\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
       }
     },
     {
       "name": "04 Read verified note",
       "event": [
-        {"listen": "prerequest", "script": {"type": "text/javascript", "exec": [
-          "if (!pm.collectionVariables.get('note_id')) throw new Error('Create note first');"
-        ]}},
-        {"listen": "test", "script": {"type": "text/javascript", "exec": [
-          "pm.test('verified text is preserved exactly', () => {",
-          "  pm.response.to.have.status(200);",
-          "  const body = pm.response.json();",
-          "  pm.expect(body.id).to.eql(pm.collectionVariables.get('note_id'));",
-          "  pm.expect(body.student_id).to.eql(pm.collectionVariables.get('student_id'));",
-          "  pm.expect(body.text).to.eql(pm.collectionVariables.get('note_text'));",
-          "  ['key', 'key_id', 'nonce', 'ciphertext', 'tag'].forEach(field => pm.expect(body).not.to.have.property(field));",
-          "});"
-        ]}}
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (!pm.collectionVariables.get('note_id')) throw new Error('Create note first');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('verified text is preserved exactly', () => {",
+              "  pm.response.to.have.status(200);",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.id).to.eql(pm.collectionVariables.get('note_id'));",
+              "  pm.expect(body.student_id).to.eql(pm.collectionVariables.get('student_id'));",
+              "  pm.expect(body.text).to.eql(pm.collectionVariables.get('note_text'));",
+              "  pm.expect(body.category).to.eql('academic');",
+              "  ['key', 'key_id', 'nonce', 'ciphertext', 'tag'].forEach(field => pm.expect(body).not.to.have.property(field));",
+              "});"
+            ]
+          }
+        }
       ],
-      "request": {"method": "GET", "header": [], "url": "{{base_url}}/api/v1/students/{{student_id}}/secure-notes/{{note_id}}"}
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/v1/students/{{student_id}}/secure-notes/{{note_id}}"
+      }
     },
     {
       "name": "05 Reject blank note",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('blank note is rejected', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ],
       "request": {
-        "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}],
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
         "url": "{{base_url}}/api/v1/students/{{student_id}}/secure-notes",
-        "body": {"mode": "raw", "raw": "{\"text\": \"   \"}", "options": {"raw": {"language": "json"}}}
-      },
-      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
-        "pm.test('blank note is rejected', () => pm.response.to.have.status(422));"
-      ]}}]
+        "body": {
+          "mode": "raw",
+          "raw": "{\"text\": \"   \"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
     },
     {
       "name": "06 Reject client key field",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('unknown input field is rejected', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ],
       "request": {
-        "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}],
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
         "url": "{{base_url}}/api/v1/students/{{student_id}}/secure-notes",
-        "body": {"mode": "raw", "raw": "{\"text\": \"Вигадана примітка\", \"key\": \"not-a-real-key\"}", "options": {"raw": {"language": "json"}}}
-      },
-      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
-        "pm.test('unknown input field is rejected', () => pm.response.to.have.status(422));"
-      ]}}]
+        "body": {
+          "mode": "raw",
+          "raw": "{\"text\": \"Вигадана примітка\", \"key\": \"not-a-real-key\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
     },
     {
-      "name": "07 Reject unknown student",
+      "name": "07a Create other synthetic student",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 201', () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) pm.collectionVariables.set('other_student_id', pm.response.json().id);"
+            ]
+          }
+        }
+      ],
       "request": {
-        "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}],
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/students",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Олена Коваль\",\n  \"email\": \"practice02-other-{{$guid}}@example.com\",\n  \"group_code\": \"КН-31\",\n  \"enrollment_year\": 2024\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "07b Note is not readable through other student",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('other student gets 404', () => pm.response.to.have.status(404));",
+              "pm.test('no note text', () => pm.expect(pm.response.text()).not.to.include(pm.collectionVariables.get('note_text').trim()));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/v1/students/{{other_student_id}}/secure-notes/{{note_id}}"
+      }
+    },
+    {
+      "name": "07c Reject unknown student",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('unknown student is not found', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
         "url": "{{base_url}}/api/v1/students/00000000-0000-4000-8000-000000000000/secure-notes",
-        "body": {"mode": "raw", "raw": "{\"text\": \"Вигадана примітка\"}", "options": {"raw": {"language": "json"}}}
-      },
-      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
-        "pm.test('unknown student is not found', () => pm.response.to.have.status(404));"
-      ]}}]
+        "body": {
+          "mode": "raw",
+          "raw": "{\"text\": \"Вигадана примітка\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
     },
     {
       "name": "08 Read local benchmark report",
-      "request": {"method": "GET", "header": [], "url": "{{base_url}}/api/v1/lab/crypto/benchmark-results"},
-      "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
-        "pm.test('prepared benchmark report is available', () => pm.response.to.have.status(200));",
-        "pm.test('report has object structure', () => pm.expect(pm.response.json()).to.be.an('object'));",
-        "// TODO: перевірте власну структуру звіту, 36 результатів та параметри досліду."
-      ]}}]
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('prepared benchmark report is available', () => pm.response.to.have.status(200));",
+              "pm.test('schema_version=1 and 36 results', () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.schema_version).to.eql(1);",
+              "  pm.expect(body.results).to.have.lengthOf(36);",
+              "  pm.expect(body.parameters.warmup).to.eql(10);",
+              "  pm.expect(body.parameters.series).to.eql(5);",
+              "  pm.expect(body.parameters.operations_per_series).to.eql(100);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/v1/lab/crypto/benchmark-results"
+      }
+    },
+    {
+      "name": "09a Practice 1: GET student",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('practice 1 fields kept', () => pm.expect(pm.response.json()).to.have.all.keys('id','full_name','email','group_code','enrollment_year'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/v1/students/{{student_id}}"
+      }
+    },
+    {
+      "name": "09b Practice 1: PATCH student",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('enrollment_year updated', () => pm.expect(pm.response.json().enrollment_year).to.eql(2025));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/students/{{student_id}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"enrollment_year\": 2025}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "10a Variant 1: default category",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 201', () => pm.response.to.have.status(201));",
+              "pm.test('category defaults to general', () => pm.expect(pm.response.json().category).to.eql('general'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/students/{{student_id}}/secure-notes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"text\": \"Вигадана примітка без категорії\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "10b Variant 1: administrative category",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 201', () => pm.response.to.have.status(201));",
+              "pm.test('category administrative', () => pm.expect(pm.response.json().category).to.eql('administrative'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/students/{{student_id}}/secure-notes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"text\": \"Вигадана адміністративна примітка\", \"category\": \"administrative\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "10c Variant 1: unknown category",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('unknown category is rejected', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/v1/students/{{student_id}}/secure-notes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"text\": \"Вигадана примітка\", \"category\": \"secret\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
     }
   ]
 }
