@@ -87,5 +87,69 @@ def test_process_key_has_no_secret_in_repr():
     assert "nonces=" not in repr(value)
 
 
-# TODO: доповніть великими повідомленнями, усіченим тегом, невідомою бібліотекою.
-# TODO: перевірте конфігурацію лічильника і відсутність повторів між записами.
+# --- додаткові перевірки ------------------------------------------------------
+
+
+@pytest.mark.parametrize("backend", BACKENDS)
+@pytest.mark.parametrize("algorithm,key_size", PROFILES)
+@pytest.mark.parametrize("size", (1024, 65536, 1048576))
+def test_round_trip_large_binary(backend, algorithm, key_size, size):
+    key, nonce, aad = token_bytes(key_size), bytes(12), b"x" * 64
+    message = token_bytes(size)
+    ct, tag = seal_bytes(backend, algorithm, key, nonce, message, aad)
+    assert len(ct) + len(tag) == size + 16
+    assert open_bytes(backend, algorithm, key, nonce, ct, tag, aad) == message
+
+
+@pytest.mark.parametrize("backend", BACKENDS)
+@pytest.mark.parametrize("algorithm,key_size", PROFILES)
+def test_truncated_tag_is_rejected(backend, algorithm, key_size):
+    key, nonce, aad = token_bytes(key_size), bytes(12), b"ctx"
+    ct, tag = seal_bytes(backend, algorithm, key, nonce, b"demo", aad)
+    with pytest.raises(CiphertextError):
+        open_bytes(backend, algorithm, key, nonce, ct, tag[:12], aad)
+
+
+@pytest.mark.parametrize("algorithm,key_size", PROFILES)
+def test_unknown_backend_is_rejected(algorithm, key_size):
+    key, nonce = token_bytes(key_size), bytes(12)
+    with pytest.raises(ValueError):
+        seal_bytes("openssl-cli", algorithm, key, nonce, b"demo", b"")
+    with pytest.raises(ValueError):
+        open_bytes("openssl-cli", algorithm, key, nonce, b"demo", bytes(16), b"")
+
+
+@pytest.mark.parametrize("backend", BACKENDS)
+@pytest.mark.parametrize("algorithm,key_size", PROFILES)
+def test_wrong_key_length_is_rejected_separately(backend, algorithm, key_size):
+    with pytest.raises(ValueError):
+        seal_bytes(backend, algorithm, token_bytes(key_size - 1), bytes(12), b"demo", b"")
+
+
+def test_nonce_sequence_is_monotonic_without_repeats():
+    seq = NonceSequence(limit=5000)
+    values = [seq.next() for _ in range(5000)]
+    assert len(set(values)) == 5000
+    assert values[0] == bytes(12)
+    assert int.from_bytes(values[-1], "big") == 4999
+
+
+@pytest.mark.parametrize("limit", (0, -1, 1_000_001, 2.0, "10"))
+def test_invalid_counter_limit(limit):
+    with pytest.raises(ValueError):
+        NonceSequence(limit=limit)
+
+
+def test_context_is_canonical_and_bound_to_all_fields():
+    base = note_aad("s", "n", "AES-256-GCM", "k")
+    assert base == note_aad("s", "n", "AES-256-GCM", "k")
+    assert base != note_aad("s", "other", "AES-256-GCM", "k")
+    assert base != note_aad("s", "n", "AES-128-GCM", "k")
+    assert base != note_aad("s", "n", "AES-256-GCM", "other")
+    assert b" " not in base
+
+
+def test_process_keys_are_independent():
+    first, second = create_process_key(), create_process_key()
+    assert first.key != second.key
+    assert first.key_id != second.key_id
