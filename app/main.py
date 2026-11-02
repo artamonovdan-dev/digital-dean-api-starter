@@ -2,15 +2,18 @@
 
 from fastapi import FastAPI
 
-from app.api import students
+from app.api import crypto_lab, secure_notes, students
 
-app = FastAPI(title="Digital Dean API", version="0.1.0")
+app = FastAPI(title="Digital Dean API", version="0.2.0")
 
 
 @app.get("/health", tags=["system"])
 def health() -> dict[str, str]:
-    """Перевірка готовності застосунку (залежностей у першій версії немає)."""
+    """Перевірка готовності застосунку."""
     return {"status": "ok"}
 
 
 app.include_router(students.router, prefix="/api/v1")
+# Маршрутизатори роботи 2 уже містять повний префікс /api/v1/...
+app.include_router(secure_notes.router)
+app.include_router(crypto_lab.router)

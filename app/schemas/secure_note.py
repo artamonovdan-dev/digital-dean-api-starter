@@ -7,27 +7,48 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 Algorithm = Literal["AES-128-GCM", "AES-256-GCM", "ChaCha20-Poly1305"]
 
+# Індивідуальний варіант 1: категорія примітки.
+NoteCategory = Literal["general", "academic", "administrative"]
+NOTE_CATEGORIES: tuple[str, ...] = ("general", "academic", "administrative")
+
+MAX_NOTE_BYTES = 4096
+
 
 class NoteCreate(BaseModel):
+    """Тіло POST: тільки text і category. Ключ, алгоритм, nonce, tag задає сервер."""
+
     model_config = ConfigDict(extra="forbid", strict=True)
-    text: str = Field(min_length=1, max_length=4096)
+    text: str = Field(min_length=1, max_length=MAX_NOTE_BYTES)
+    category: NoteCategory = "general"
 
     @field_validator("text")
     @classmethod
     def validate_text(cls, value: str) -> str:
-        """TODO: 1–4096 байтів UTF-8, не лише пробіли; не обрізати текст."""
-        raise NotImplementedError("Implement nonblank UTF-8 byte length validation")
+        """1–4096 байтів UTF-8, не лише пробіли; текст не обрізається."""
+        if not value.strip():
+            raise ValueError("Empty note")
+        if len(value.encode("utf-8")) > MAX_NOTE_BYTES:
+            raise ValueError(f"Note exceeds {MAX_NOTE_BYTES} bytes")
+        return value
 
 
 class NoteMetadata(BaseModel):
+    """Відповідь POST: метадані без text, ключа та конверта."""
+
     model_config = ConfigDict(extra="forbid")
     id: UUID
     student_id: UUID
     algorithm: Algorithm
+    category: NoteCategory
 
 
 class NoteRead(NoteMetadata):
+    """Відповідь GET: перевірений і розшифрований текст."""
+
     text: str
 
 
-# TODO: виконайте індивідуальний варіант, зберігаючи базові правила.
+class NoteErrorResponse(BaseModel):
+    """Безпечна відповідь 500/503 без внутрішніх подробиць."""
+
+    detail: str
