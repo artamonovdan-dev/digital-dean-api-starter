@@ -1,0 +1,632 @@
+{
+  "schema_version": 1,
+  "run_id": "20261102T092438Z-9b147db1",
+  "started_at": "2026-11-02T09:24:38.515791+00:00",
+  "finished_at": "2026-11-02T09:24:47.647507+00:00",
+  "code_state": {
+    "git_commit": "0e17648b2aa4b522f470fa3f1b2140359013d536",
+    "uncommitted_changes": false
+  },
+  "environment": {
+    "cpu_model": "13th Gen Intel(R) Core(TM) i5-13400F",
+    "os": "Windows-11-10.0.26200-SP0",
+    "architecture": "AMD64",
+    "python": "3.13.17",
+    "python_implementation": "CPython",
+    "cryptography": {
+      "version": "48.0.1",
+      "openssl": "OpenSSL 4.0.1 9 Jun 2026"
+    },
+    "pycryptodome": {
+      "version": "3.24.0",
+      "aes_ni": true,
+      "clmul": true
+    },
+    "hardware_acceleration": {
+      "aes_ni": true,
+      "clmul": true,
+      "source": "Crypto.Util._cpu_features"
+    },
+    "timer": {
+      "function": "time.perf_counter_ns",
+      "implementation": "QueryPerformanceCounter()",
+      "resolution_s": 1e-07,
+      "monotonic": true
+    }
+  },
+  "parameters": {
+    "sizes_bytes": [
+      1024,
+      65536,
+      1048576
+    ],
+    "warmup": 10,
+    "series": 5,
+    "operations_per_series": 100,
+    "aad_bytes": 64,
+    "nonce_bytes": 12,
+    "tag_bytes": 16,
+    "includes_cipher_object_creation": true,
+    "aggregation": "median of 5 series means; IQR via statistics.quantiles(method='inclusive')",
+    "throughput_unit": "MiB/s of original message bytes (tag excluded)",
+    "series_order": "shuffled per series, random.Random(20261102)"
+  },
+  "results": [
+    {
+      "backend": "cryptography",
+      "algorithm": "AES-128-GCM",
+      "size_bytes": 1024,
+      "operation": "encrypt",
+      "series_mean_ns": [
+        2476.0,
+        2536.0,
+        2371.0,
+        2396.0,
+        2292.0
+      ],
+      "median_ns": 2396.0,
+      "iqr_ns": 105.0,
+      "throughput_mib_s": 407.58034223706176
+    },
+    {
+      "backend": "cryptography",
+      "algorithm": "AES-128-GCM",
+      "size_bytes": 1024,
+      "operation": "decrypt",
+      "series_mean_ns": [
+        2367.0,
+        2484.0,
+        2484.0,
+        2979.0,
+        2501.0
+      ],
+      "median_ns": 2484.0,
+      "iqr_ns": 17.0,
+      "throughput_mib_s": 393.1411030595813
+    },
+    {
+      "backend": "cryptography",
+      "algorithm": "AES-128-GCM",
+      "size_bytes": 65536,
+      "operation": "encrypt",
+      "series_mean_ns": [
+        11922.0,
+        11507.0,
+        11549.0,
+        11905.0,
+        11656.0
+      ],
+      "median_ns": 11656.0,
+      "iqr_ns": 356.0,
+      "throughput_mib_s": 5362.045298558683
+    },
+    {
+      "backend": "cryptography",
+      "algorithm": "AES-128-GCM",
+      "size_bytes": 65536,
+      "operation": "decrypt",
+      "series_mean_ns": [
+        11760.0,
+        13674.0,
+        11872.0,
+        11857.0,
+        12790.0
+      ],
+      "median_ns": 11872.0,
+      "iqr_ns": 933.0,
+      "throughput_mib_s": 5264.487870619946
+    },
+    {
+      "backend": "cryptography",
+      "algorithm": "AES-128-GCM",
+      "size_bytes": 1048576,
+      "operation": "encrypt",
+      "series_mean_ns": [
+        585412.0,
+        625039.0,
+        642329.0,
+        1143141.0,
+        1044068.0
+      ],
+      "median_ns": 642329.0,
+      "iqr_ns": 419029.0,
+      "throughput_mib_s": 1556.8345816551953
+    },
+    {
+      "backend": "cryptography",
+      "algorithm": "AES-128-GCM",
+      "size_bytes": 1048576,
+      "operation": "decrypt",
+      "series_mean_ns": [
+        1203145.0,
+        613564.0,
+        615575.0,
+        618264.0,
+        648717.0
+      ],
+      "median_ns": 618264.0,
+      "iqr_ns": 33142.0,
+      "throughput_mib_s": 1617.432035505868
+    },
+    {
+      "backend": "pycryptodome",
+      "algorithm": "AES-128-GCM",
+      "size_bytes": 1024,
+      "operation": "encrypt",
+      "series_mean_ns": [
+        28450.0,
+        28309.0,
+        27983.0,
+        27785.0,
+        27840.0
+      ],
+      "median_ns": 27983.0,
+      "iqr_ns": 469.0,
+      "throughput_mib_s": 34.89842046957081
+    },
+    {
+      "backend": "pycryptodome",
+      "algorithm": "AES-128-GCM",
+      "size_bytes": 1024,
+      "operation": "decrypt",
+      "series_mean_ns": [
+        38466.0,
+        36179.0,
+        37056.0,
+        40012.0,
+        42636.0
+      ],
+      "median_ns": 38466.0,
+      "iqr_ns": 2956.0,
+      "throughput_mib_s": 25.387680029116623
+    },
+    {
+      "backend": "pycryptodome",
+      "algorithm": "AES-128-GCM",
+      "size_bytes": 65536,
+      "operation": "encrypt",
+      "series_mean_ns": [
+        51975.0,
+        49468.0,
+        46280.0,
+        46588.0,
+        47454.0
+      ],
+      "median_ns": 47454.0,
+      "iqr_ns": 2880.0,
+      "throughput_mib_s": 1317.0649471066718
+    },
+    {
+      "backend": "pycryptodome",
+      "algorithm": "AES-128-GCM",
+      "size_bytes": 65536,
+      "operation": "decrypt",
+      "series_mean_ns": [
+        60297.0,
+        57248.0,
+        60782.0,
+        55332.0,
+        56946.0
+      ],
+      "median_ns": 57248.0,
+      "iqr_ns": 3351.0,
+      "throughput_mib_s": 1091.7411961989937
+    },
+    {
+      "backend": "pycryptodome",
+      "algorithm": "AES-128-GCM",
+      "size_bytes": 1048576,
+      "operation": "encrypt",
+      "series_mean_ns": [
+        712458.0,
+        713839.0,
+        756170.0,
+        1388039.0,
+        1531682.0
+      ],
+      "median_ns": 756170.0,
+      "iqr_ns": 674200.0,
+      "throughput_mib_s": 1322.4539455413465
+    },
+    {
+      "backend": "pycryptodome",
+      "algorithm": "AES-128-GCM",
+      "size_bytes": 1048576,
+      "operation": "decrypt",
+      "series_mean_ns": [
+        1331682.0,
+        739221.0,
+        791569.0,
+        724501.0,
+        777222.0
+      ],
+      "median_ns": 777222.0,
+      "iqr_ns": 52348.0,
+      "throughput_mib_s": 1286.6336773791786
+    },
+    {
+      "backend": "cryptography",
+      "algorithm": "AES-256-GCM",
+      "size_bytes": 1024,
+      "operation": "encrypt",
+      "series_mean_ns": [
+        2563.0,
+        2479.0,
+        2455.0,
+        2376.0,
+        2364.0
+      ],
+      "median_ns": 2455.0,
+      "iqr_ns": 103.0,
+      "throughput_mib_s": 397.7851323828921
+    },
+    {
+      "backend": "cryptography",
+      "algorithm": "AES-256-GCM",
+      "size_bytes": 1024,
+      "operation": "decrypt",
+      "series_mean_ns": [
+        2497.0,
+        2537.0,
+        2416.0,
+        4467.0,
+        2514.0
+      ],
+      "median_ns": 2514.0,
+      "iqr_ns": 40.0,
+      "throughput_mib_s": 388.44968178202066
+    },
+    {
+      "backend": "cryptography",
+      "algorithm": "AES-256-GCM",
+      "size_bytes": 65536,
+      "operation": "encrypt",
+      "series_mean_ns": [
+        12834.0,
+        12923.0,
+        12983.0,
+        13053.0,
+        12872.0
+      ],
+      "median_ns": 12923.0,
+      "iqr_ns": 111.0,
+      "throughput_mib_s": 4836.338311537569
+    },
+    {
+      "backend": "cryptography",
+      "algorithm": "AES-256-GCM",
+      "size_bytes": 65536,
+      "operation": "decrypt",
+      "series_mean_ns": [
+        13446.0,
+        13296.0,
+        13089.0,
+        13449.0,
+        13462.0
+      ],
+      "median_ns": 13446.0,
+      "iqr_ns": 153.0,
+      "throughput_mib_s": 4648.222519708464
+    },
+    {
+      "backend": "cryptography",
+      "algorithm": "AES-256-GCM",
+      "size_bytes": 1048576,
+      "operation": "encrypt",
+      "series_mean_ns": [
+        621530.0,
+        660311.0,
+        649607.0,
+        682413.0,
+        1095445.0
+      ],
+      "median_ns": 660311.0,
+      "iqr_ns": 32806.0,
+      "throughput_mib_s": 1514.4378936592
+    },
+    {
+      "backend": "cryptography",
+      "algorithm": "AES-256-GCM",
+      "size_bytes": 1048576,
+      "operation": "decrypt",
+      "series_mean_ns": [
+        1059890.0,
+        638507.0,
+        687556.0,
+        646753.0,
+        638259.0
+      ],
+      "median_ns": 646753.0,
+      "iqr_ns": 49049.0,
+      "throughput_mib_s": 1546.1853288658886
+    },
+    {
+      "backend": "pycryptodome",
+      "algorithm": "AES-256-GCM",
+      "size_bytes": 1024,
+      "operation": "encrypt",
+      "series_mean_ns": [
+        27881.0,
+        28015.0,
+        28012.0,
+        28970.0,
+        27508.0
+      ],
+      "median_ns": 28012.0,
+      "iqr_ns": 134.0,
+      "throughput_mib_s": 34.86229116093103
+    },
+    {
+      "backend": "pycryptodome",
+      "algorithm": "AES-256-GCM",
+      "size_bytes": 1024,
+      "operation": "decrypt",
+      "series_mean_ns": [
+        37876.0,
+        40403.0,
+        36233.0,
+        35599.0,
+        35975.0
+      ],
+      "median_ns": 36233.0,
+      "iqr_ns": 1901.0,
+      "throughput_mib_s": 26.952294869318024
+    },
+    {
+      "backend": "pycryptodome",
+      "algorithm": "AES-256-GCM",
+      "size_bytes": 65536,
+      "operation": "encrypt",
+      "series_mean_ns": [
+        49041.0,
+        48061.0,
+        47959.0,
+        48493.0,
+        48147.0
+      ],
+      "median_ns": 48147.0,
+      "iqr_ns": 432.0,
+      "throughput_mib_s": 1298.1078779570898
+    },
+    {
+      "backend": "pycryptodome",
+      "algorithm": "AES-256-GCM",
+      "size_bytes": 65536,
+      "operation": "decrypt",
+      "series_mean_ns": [
+        57166.0,
+        56001.0,
+        57029.0,
+        58023.0,
+        57322.0
+      ],
+      "median_ns": 57166.0,
+      "iqr_ns": 293.0,
+      "throughput_mib_s": 1093.3072105797153
+    },
+    {
+      "backend": "pycryptodome",
+      "algorithm": "AES-256-GCM",
+      "size_bytes": 1048576,
+      "operation": "encrypt",
+      "series_mean_ns": [
+        714240.0,
+        758234.0,
+        808584.0,
+        910261.0,
+        1472498.0
+      ],
+      "median_ns": 808584.0,
+      "iqr_ns": 152027.0,
+      "throughput_mib_s": 1236.7298882985565
+    },
+    {
+      "backend": "pycryptodome",
+      "algorithm": "AES-256-GCM",
+      "size_bytes": 1048576,
+      "operation": "decrypt",
+      "series_mean_ns": [
+        1598992.0,
+        805864.0,
+        787776.0,
+        774069.0,
+        791834.0
+      ],
+      "median_ns": 791834.0,
+      "iqr_ns": 18088.0,
+      "throughput_mib_s": 1262.8909594687775
+    },
+    {
+      "backend": "cryptography",
+      "algorithm": "ChaCha20-Poly1305",
+      "size_bytes": 1024,
+      "operation": "encrypt",
+      "series_mean_ns": [
+        3157.0,
+        2818.0,
+        3092.0,
+        3161.0,
+        3107.0
+      ],
+      "median_ns": 3107.0,
+      "iqr_ns": 65.0,
+      "throughput_mib_s": 314.3104280656582
+    },
+    {
+      "backend": "cryptography",
+      "algorithm": "ChaCha20-Poly1305",
+      "size_bytes": 1024,
+      "operation": "decrypt",
+      "series_mean_ns": [
+        3438.0,
+        2859.0,
+        2975.0,
+        3675.0,
+        3711.0
+      ],
+      "median_ns": 3438.0,
+      "iqr_ns": 700.0,
+      "throughput_mib_s": 284.0495927865038
+    },
+    {
+      "backend": "cryptography",
+      "algorithm": "ChaCha20-Poly1305",
+      "size_bytes": 65536,
+      "operation": "encrypt",
+      "series_mean_ns": [
+        30738.0,
+        28650.0,
+        28615.0,
+        28563.0,
+        28456.0
+      ],
+      "median_ns": 28615.0,
+      "iqr_ns": 87.0,
+      "throughput_mib_s": 2184.169142058361
+    },
+    {
+      "backend": "cryptography",
+      "algorithm": "ChaCha20-Poly1305",
+      "size_bytes": 65536,
+      "operation": "decrypt",
+      "series_mean_ns": [
+        30165.0,
+        28788.0,
+        29760.0,
+        29703.0,
+        29464.0
+      ],
+      "median_ns": 29703.0,
+      "iqr_ns": 296.0,
+      "throughput_mib_s": 2104.164562502104
+    },
+    {
+      "backend": "cryptography",
+      "algorithm": "ChaCha20-Poly1305",
+      "size_bytes": 1048576,
+      "operation": "encrypt",
+      "series_mean_ns": [
+        885878.0,
+        889610.0,
+        934044.0,
+        1846575.0,
+        2102198.0
+      ],
+      "median_ns": 934044.0,
+      "iqr_ns": 956965.0,
+      "throughput_mib_s": 1070.613375815272
+    },
+    {
+      "backend": "cryptography",
+      "algorithm": "ChaCha20-Poly1305",
+      "size_bytes": 1048576,
+      "operation": "decrypt",
+      "series_mean_ns": [
+        1599371.0,
+        913915.0,
+        904087.0,
+        903901.0,
+        961334.0
+      ],
+      "median_ns": 913915.0,
+      "iqr_ns": 57247.0,
+      "throughput_mib_s": 1094.19366133612
+    },
+    {
+      "backend": "pycryptodome",
+      "algorithm": "ChaCha20-Poly1305",
+      "size_bytes": 1024,
+      "operation": "encrypt",
+      "series_mean_ns": [
+        14600.0,
+        15877.0,
+        14668.0,
+        14209.0,
+        14003.0
+      ],
+      "median_ns": 14600.0,
+      "iqr_ns": 459.0,
+      "throughput_mib_s": 66.88784246575342
+    },
+    {
+      "backend": "pycryptodome",
+      "algorithm": "ChaCha20-Poly1305",
+      "size_bytes": 1024,
+      "operation": "decrypt",
+      "series_mean_ns": [
+        23791.0,
+        21719.0,
+        20087.0,
+        19985.0,
+        20072.0
+      ],
+      "median_ns": 20087.0,
+      "iqr_ns": 1647.0,
+      "throughput_mib_s": 48.616642604669686
+    },
+    {
+      "backend": "pycryptodome",
+      "algorithm": "ChaCha20-Poly1305",
+      "size_bytes": 65536,
+      "operation": "encrypt",
+      "series_mean_ns": [
+        181873.0,
+        171667.0,
+        172172.0,
+        174791.0,
+        171483.0
+      ],
+      "median_ns": 172172.0,
+      "iqr_ns": 3124.0,
+      "throughput_mib_s": 363.0090839393165
+    },
+    {
+      "backend": "pycryptodome",
+      "algorithm": "ChaCha20-Poly1305",
+      "size_bytes": 65536,
+      "operation": "decrypt",
+      "series_mean_ns": [
+        184798.0,
+        179876.0,
+        178147.0,
+        179139.0,
+        180535.0
+      ],
+      "median_ns": 179876.0,
+      "iqr_ns": 1396.0,
+      "throughput_mib_s": 347.4615846472014
+    },
+    {
+      "backend": "pycryptodome",
+      "algorithm": "ChaCha20-Poly1305",
+      "size_bytes": 1048576,
+      "operation": "encrypt",
+      "series_mean_ns": [
+        2997625.0,
+        2941457.0,
+        3137054.0,
+        6002000.0,
+        5659264.0
+      ],
+      "median_ns": 3137054.0,
+      "iqr_ns": 2661639.0,
+      "throughput_mib_s": 318.7704132603392
+    },
+    {
+      "backend": "pycryptodome",
+      "algorithm": "ChaCha20-Poly1305",
+      "size_bytes": 1048576,
+      "operation": "decrypt",
+      "series_mean_ns": [
+        4109724.0,
+        3078644.0,
+        3095733.0,
+        2988234.0,
+        3016115.0
+      ],
+      "median_ns": 3078644.0,
+      "iqr_ns": 79618.0,
+      "throughput_mib_s": 324.8183291085296
+    }
+  ]
+}
