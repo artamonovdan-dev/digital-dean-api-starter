@@ -1,0 +1,392 @@
+[
+  {
+    "operation": "encrypt",
+    "payload_bytes": 64,
+    "series_index": 1,
+    "order": [
+      "rsa2048-oaep",
+      "rsa3072-oaep"
+    ]
+  },
+  {
+    "operation": "encrypt",
+    "payload_bytes": 64,
+    "series_index": 2,
+    "order": [
+      "rsa3072-oaep",
+      "rsa2048-oaep"
+    ]
+  },
+  {
+    "operation": "encrypt",
+    "payload_bytes": 64,
+    "series_index": 3,
+    "order": [
+      "rsa2048-oaep",
+      "rsa3072-oaep"
+    ]
+  },
+  {
+    "operation": "encrypt",
+    "payload_bytes": 64,
+    "series_index": 4,
+    "order": [
+      "rsa3072-oaep",
+      "rsa2048-oaep"
+    ]
+  },
+  {
+    "operation": "encrypt",
+    "payload_bytes": 64,
+    "series_index": 5,
+    "order": [
+      "rsa2048-oaep",
+      "rsa3072-oaep"
+    ]
+  },
+  {
+    "operation": "encrypt",
+    "payload_bytes": 1024,
+    "series_index": 1,
+    "order": [
+      "rsa3072-oaep-aes256gcm",
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm"
+    ]
+  },
+  {
+    "operation": "encrypt",
+    "payload_bytes": 1024,
+    "series_index": 2,
+    "order": [
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm",
+      "rsa3072-oaep-aes256gcm"
+    ]
+  },
+  {
+    "operation": "encrypt",
+    "payload_bytes": 1024,
+    "series_index": 3,
+    "order": [
+      "hpke-p256-aes256gcm",
+      "rsa3072-oaep-aes256gcm",
+      "hpke-x25519-aes256gcm"
+    ]
+  },
+  {
+    "operation": "encrypt",
+    "payload_bytes": 1024,
+    "series_index": 4,
+    "order": [
+      "rsa3072-oaep-aes256gcm",
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm"
+    ]
+  },
+  {
+    "operation": "encrypt",
+    "payload_bytes": 1024,
+    "series_index": 5,
+    "order": [
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm",
+      "rsa3072-oaep-aes256gcm"
+    ]
+  },
+  {
+    "operation": "encrypt",
+    "payload_bytes": 65536,
+    "series_index": 1,
+    "order": [
+      "rsa3072-oaep-aes256gcm",
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm"
+    ]
+  },
+  {
+    "operation": "encrypt",
+    "payload_bytes": 65536,
+    "series_index": 2,
+    "order": [
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm",
+      "rsa3072-oaep-aes256gcm"
+    ]
+  },
+  {
+    "operation": "encrypt",
+    "payload_bytes": 65536,
+    "series_index": 3,
+    "order": [
+      "hpke-p256-aes256gcm",
+      "rsa3072-oaep-aes256gcm",
+      "hpke-x25519-aes256gcm"
+    ]
+  },
+  {
+    "operation": "encrypt",
+    "payload_bytes": 65536,
+    "series_index": 4,
+    "order": [
+      "rsa3072-oaep-aes256gcm",
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm"
+    ]
+  },
+  {
+    "operation": "encrypt",
+    "payload_bytes": 65536,
+    "series_index": 5,
+    "order": [
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm",
+      "rsa3072-oaep-aes256gcm"
+    ]
+  },
+  {
+    "operation": "encrypt",
+    "payload_bytes": 1048576,
+    "series_index": 1,
+    "order": [
+      "rsa3072-oaep-aes256gcm",
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm"
+    ]
+  },
+  {
+    "operation": "encrypt",
+    "payload_bytes": 1048576,
+    "series_index": 2,
+    "order": [
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm",
+      "rsa3072-oaep-aes256gcm"
+    ]
+  },
+  {
+    "operation": "encrypt",
+    "payload_bytes": 1048576,
+    "series_index": 3,
+    "order": [
+      "hpke-p256-aes256gcm",
+      "rsa3072-oaep-aes256gcm",
+      "hpke-x25519-aes256gcm"
+    ]
+  },
+  {
+    "operation": "encrypt",
+    "payload_bytes": 1048576,
+    "series_index": 4,
+    "order": [
+      "rsa3072-oaep-aes256gcm",
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm"
+    ]
+  },
+  {
+    "operation": "encrypt",
+    "payload_bytes": 1048576,
+    "series_index": 5,
+    "order": [
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm",
+      "rsa3072-oaep-aes256gcm"
+    ]
+  },
+  {
+    "operation": "decrypt",
+    "payload_bytes": 64,
+    "series_index": 1,
+    "order": [
+      "rsa2048-oaep",
+      "rsa3072-oaep"
+    ]
+  },
+  {
+    "operation": "decrypt",
+    "payload_bytes": 64,
+    "series_index": 2,
+    "order": [
+      "rsa3072-oaep",
+      "rsa2048-oaep"
+    ]
+  },
+  {
+    "operation": "decrypt",
+    "payload_bytes": 64,
+    "series_index": 3,
+    "order": [
+      "rsa2048-oaep",
+      "rsa3072-oaep"
+    ]
+  },
+  {
+    "operation": "decrypt",
+    "payload_bytes": 64,
+    "series_index": 4,
+    "order": [
+      "rsa3072-oaep",
+      "rsa2048-oaep"
+    ]
+  },
+  {
+    "operation": "decrypt",
+    "payload_bytes": 64,
+    "series_index": 5,
+    "order": [
+      "rsa2048-oaep",
+      "rsa3072-oaep"
+    ]
+  },
+  {
+    "operation": "decrypt",
+    "payload_bytes": 1024,
+    "series_index": 1,
+    "order": [
+      "rsa3072-oaep-aes256gcm",
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm"
+    ]
+  },
+  {
+    "operation": "decrypt",
+    "payload_bytes": 1024,
+    "series_index": 2,
+    "order": [
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm",
+      "rsa3072-oaep-aes256gcm"
+    ]
+  },
+  {
+    "operation": "decrypt",
+    "payload_bytes": 1024,
+    "series_index": 3,
+    "order": [
+      "hpke-p256-aes256gcm",
+      "rsa3072-oaep-aes256gcm",
+      "hpke-x25519-aes256gcm"
+    ]
+  },
+  {
+    "operation": "decrypt",
+    "payload_bytes": 1024,
+    "series_index": 4,
+    "order": [
+      "rsa3072-oaep-aes256gcm",
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm"
+    ]
+  },
+  {
+    "operation": "decrypt",
+    "payload_bytes": 1024,
+    "series_index": 5,
+    "order": [
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm",
+      "rsa3072-oaep-aes256gcm"
+    ]
+  },
+  {
+    "operation": "decrypt",
+    "payload_bytes": 65536,
+    "series_index": 1,
+    "order": [
+      "rsa3072-oaep-aes256gcm",
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm"
+    ]
+  },
+  {
+    "operation": "decrypt",
+    "payload_bytes": 65536,
+    "series_index": 2,
+    "order": [
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm",
+      "rsa3072-oaep-aes256gcm"
+    ]
+  },
+  {
+    "operation": "decrypt",
+    "payload_bytes": 65536,
+    "series_index": 3,
+    "order": [
+      "hpke-p256-aes256gcm",
+      "rsa3072-oaep-aes256gcm",
+      "hpke-x25519-aes256gcm"
+    ]
+  },
+  {
+    "operation": "decrypt",
+    "payload_bytes": 65536,
+    "series_index": 4,
+    "order": [
+      "rsa3072-oaep-aes256gcm",
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm"
+    ]
+  },
+  {
+    "operation": "decrypt",
+    "payload_bytes": 65536,
+    "series_index": 5,
+    "order": [
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm",
+      "rsa3072-oaep-aes256gcm"
+    ]
+  },
+  {
+    "operation": "decrypt",
+    "payload_bytes": 1048576,
+    "series_index": 1,
+    "order": [
+      "rsa3072-oaep-aes256gcm",
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm"
+    ]
+  },
+  {
+    "operation": "decrypt",
+    "payload_bytes": 1048576,
+    "series_index": 2,
+    "order": [
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm",
+      "rsa3072-oaep-aes256gcm"
+    ]
+  },
+  {
+    "operation": "decrypt",
+    "payload_bytes": 1048576,
+    "series_index": 3,
+    "order": [
+      "hpke-p256-aes256gcm",
+      "rsa3072-oaep-aes256gcm",
+      "hpke-x25519-aes256gcm"
+    ]
+  },
+  {
+    "operation": "decrypt",
+    "payload_bytes": 1048576,
+    "series_index": 4,
+    "order": [
+      "rsa3072-oaep-aes256gcm",
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm"
+    ]
+  },
+  {
+    "operation": "decrypt",
+    "payload_bytes": 1048576,
+    "series_index": 5,
+    "order": [
+      "hpke-x25519-aes256gcm",
+      "hpke-p256-aes256gcm",
+      "rsa3072-oaep-aes256gcm"
+    ]
+  }
+]
