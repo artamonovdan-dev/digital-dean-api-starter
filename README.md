@@ -1,4 +1,4 @@
-# Digital Dean API — практичні роботи 1 і 2
+# Digital Dean API — практичні роботи 1, 2 і 3
 
 Навчальний API інформаційної системи «Цифровий деканат» (FastAPI + Pydantic 2).
 Лише синтетичні дані; сховище в пам'яті — дані зникають після перезапуску.
@@ -116,3 +116,45 @@ python -m benchmarks.plot_results --input results/practice-02/report.json
 
 Сховище й ключ існують лише в пам'яті одного процесу. Немає автентифікації користувача, авторизації та HTTPS.
 Шифрування поля не захищає від захоплення процесу і не контролює повторну видачу старого конверта.
+
+---
+
+# Практична робота 3 — асиметричне та гібридне шифрування
+
+**Індивідуальний варіант роботи 3: 1 — необов'язковий параметр `payload_bytes`** (64, 1024, 65536, 1048576).
+
+```bash
+python -m pip install -e ".[dev]"
+python -m pip install -r requirements-practice-03.txt
+python examples/practice_03_rsa.py
+python -m benchmarks.asymmetric_benchmark      # results/practice-03/raw.csv, report.json
+python -m benchmarks.plot_asymmetric           # графіки SVG і summary.md
+python -m pytest
+python -m uvicorn app.main:app --reload
+```
+
+## Профілі (`app/security/asymmetric`)
+
+| Профіль | Композиція | Розміри S | Конверт, байт |
+|---|---|---|---|
+| rsa2048-oaep | RSA-2048 OAEP SHA-256 (label = контекст) | 64 | 256 |
+| rsa3072-oaep | RSA-3072 OAEP SHA-256 | 64 | 384 |
+| rsa3072-oaep-aes256gcm | RSA-3072 OAEP загортає новий ключ AES-256; AES-GCM (AAD = контекст) | 1024, 65536, 1048576 | S + 412 |
+| hpke-x25519-aes256gcm | HPKE Base, DHKEM(X25519), HKDF-SHA256, AES-256-GCM (info = контекст) | те саме | S + 48 |
+| hpke-p256-aes256gcm | HPKE Base, DHKEM(P-256), HKDF-SHA256, AES-256-GCM | те саме | S + 81 |
+
+Усі відмови розшифрування (інший ключ, змінений байт, інший контекст, обрізаний конверт, невідповідний тип ключа) дають один `DecryptionError` без часткового тексту.
+
+## Новий маршрут
+
+`GET /api/v1/lab/crypto/asymmetric-benchmark-results[?payload_bytes=N]` → `BenchmarkResponse`
+
+| Умова | Код |
+|---|---|
+| Валідний звіт | 200; 4 key_generation, 22 results (або відфільтровані), 22 checks |
+| `payload_bytes` поза 64/1024/65536/1048576 або не ціле | 422 |
+| Файлу немає | 404 `{"detail": "benchmark report not found"}` |
+| Некоректний JSON, схема, семантика, розмір > 1 МіБ | 500 `{"detail": "benchmark report invalid"}` |
+
+Маршрут лише читає `results/practice-03/report.json`, не запускає експеримент і не приймає шлях файлу.
+`payload_bytes=64` → 4 результати прямого RSA; 1024/65536/1048576 → по 6 гібридних. `key_generation` і `checks` завжди повні.

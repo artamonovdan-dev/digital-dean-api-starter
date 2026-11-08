@@ -2,7 +2,7 @@
   "info": {
     "name": "Digital Dean Practical 03",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Starter checks; use your own completed API. Set variant 0..3. manual_state is empty for normal runs."
+    "description": "Variant 1 (payload_bytes). Run after python -m benchmarks.asymmetric_benchmark. manual_state is empty for normal runs; set to 'missing' or 'invalid' only for manual local file-state checks."
   },
   "variable": [
     {
@@ -11,7 +11,7 @@
     },
     {
       "key": "variant",
-      "value": "0"
+      "value": "1"
     },
     {
       "key": "manual_state",
@@ -118,7 +118,68 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"size\", () => { pm.response.to.have.status(200); const b=pm.response.json(); pm.expect(b.results).to.have.lengthOf(6); pm.expect(b.results.every(x=>x.payload_bytes===1024)).to.eql(true); });"
+                  "pm.test(\"size\", () => { pm.response.to.have.status(200); const b=pm.response.json(); pm.expect(b.results).to.have.lengthOf(6); pm.expect(b.results.every(x=>x.payload_bytes===1024)).to.eql(true); pm.expect(b.key_generation).to.have.lengthOf(4); pm.expect(b.checks).to.have.lengthOf(22); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03B2 Variant 1 size 64 (direct RSA)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/lab/crypto/asymmetric-benchmark-results?payload_bytes=64"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.collectionVariables.get(\"variant\") !== \"1\") { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"size 64\", () => { pm.response.to.have.status(200); const b=pm.response.json();",
+                  "  pm.expect(b.results).to.have.lengthOf(4);",
+                  "  pm.expect(b.results.every(x=>x.payload_bytes===64 && x.group===\"direct\")).to.eql(true);",
+                  "  pm.expect(b.key_generation).to.have.lengthOf(4); pm.expect(b.checks).to.have.lengthOf(22); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03B3 Variant 1 size 1048576",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/lab/crypto/asymmetric-benchmark-results?payload_bytes=1048576"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.collectionVariables.get(\"variant\") !== \"1\") { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"size 1 MiB\", () => { pm.response.to.have.status(200); const b=pm.response.json();",
+                  "  pm.expect(b.results).to.have.lengthOf(6);",
+                  "  pm.expect(b.results.every(x=>x.payload_bytes===1048576 && x.throughput_mib_s > 0)).to.eql(true); });"
                 ]
               }
             }
@@ -214,6 +275,34 @@
             "method": "GET",
             "header": [],
             "url": "{{base_url}}/api/v1/lab/crypto/asymmetric-benchmark-results?payload_bytes=65"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.collectionVariables.get(\"variant\") !== \"1\") { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04B2 Invalid size (not a number)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/lab/crypto/asymmetric-benchmark-results?payload_bytes=abc"
           },
           "event": [
             {
