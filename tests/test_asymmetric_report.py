@@ -260,7 +260,8 @@ def test_response_has_no_secrets(report_file):
 
 
 def test_app_version():
-    assert app.version == "0.3.0"
+    # Той самий API продовжує версіонуватися в наступних роботах.
+    assert tuple(map(int, app.version.split("."))) >= (0, 3, 0)
 
 
 # --- індивідуальний варіант 1: payload_bytes ----------------------------------------

@@ -124,3 +124,103 @@ def test_legacy_unavailability_is_explicit(monkeypatch):
     row = next(x for x in profiles.probe_profiles() if x["algorithm"] == "md5")
     assert row == dict(algorithm="md5", available=False, implementation=None,
                        reason="not_available_in_environment")
+
+
+# --- власні перевірки адаптерів і експерименту -------------------------------------
+
+import benchmarks.hash_benchmark as bench  # noqa: E402
+
+
+@pytest.mark.parametrize("algorithm", profiles.PROFILES)
+@pytest.mark.parametrize("size", [1, 16384 * 2, 16384 * 3 + 7, 1048576])
+def test_whole_equals_chunked_for_large_and_multiple_chunks(algorithm, size):
+    if available(algorithm):
+        data = profiles.synthetic_payload(size)
+        assert hash_bytes(algorithm, data) == hash_bytes(algorithm, data, "chunked")
+
+
+@pytest.mark.parametrize("algorithm", profiles.PROFILES)
+def test_digest_length_matches_profile(algorithm):
+    if available(algorithm):
+        for mode in ("whole", "chunked"):
+            assert len(hash_bytes(algorithm, b"x" * 70000, mode)) == profiles.PROFILES[algorithm].digest_bytes
+
+
+def test_blake2_uses_digest_size_not_truncation():
+    import hashlib
+    full = hashlib.blake2b(b"abc").digest()
+    assert hash_bytes("blake2b-256", b"abc") != full[:32]
+    assert hash_bytes("blake2b-256", b"abc") == hashlib.blake2b(b"abc", digest_size=32).digest()
+
+
+def test_prepared_operation_copies_mutable_input():
+    data = bytearray(b"a" * 100)
+    operation = prepare_operation("sha256", data)
+    expected = operation()
+    data[0] = 0
+    assert operation() == expected
+
+
+@pytest.mark.parametrize("bad", [None, 123, ["sha256"]])
+def test_reject_non_string_profile_or_mode(bad):
+    with pytest.raises((ValueError, TypeError)):
+        hash_bytes(bad, b"a")
+    with pytest.raises((ValueError, TypeError)):
+        hash_bytes("sha256", b"a", bad)
+
+
+def test_hamming_counts_bits_not_hex_characters():
+    # 0x0f і 0x1f відрізняються одним бітом і одним hex-символом; 0x0f і 0xf0 — 8 бітами.
+    assert hamming_bits(b"\x0f", b"\x1f") == 1
+    assert hamming_bits(b"\x0f", b"\xf0") == 8
+
+
+@pytest.mark.parametrize("algorithm", profiles.PROFILES)
+def test_experiment_correctness_checks_pass(algorithm):
+    if available(algorithm):
+        checks = bench.run_checks(algorithm)
+        assert [c["name"] for c in checks] == list(profiles.CHECK_NAMES)
+        assert all(c["passed"] is True for c in checks)
+
+
+def test_failed_check_is_recorded_not_hidden(monkeypatch):
+    monkeypatch.setitem(bench.KNOWN_VECTORS, "sha256", ("00" * 32, "00" * 32))
+    checks = {c["name"]: c["passed"] for c in bench.run_checks("sha256")}
+    assert checks["known-abc"] is False and checks["known-empty"] is False
+    assert checks["determinism"] is True
+
+
+def test_avalanche_trials_follow_bit_mapping():
+    rows = bench.avalanche_trials("sha256")
+    assert len(rows) == 100
+    assert [r["trial"] for r in rows] == list(range(1, 101))
+    assert all(r["bit_index"] == r["trial"] - 1 for r in rows)
+    assert all(0 <= r["flipped_bits"] <= 256 and r["fraction"] == r["flipped_bits"] / 256 for r in rows)
+    aggregate = bench.aggregate_avalanche("sha256", rows)
+    assert aggregate["min_flipped_bits"] <= aggregate["mean_flipped_bits"] <= aggregate["max_flipped_bits"]
+    assert aggregate["mean_fraction"] == aggregate["mean_flipped_bits"] / 256
+
+
+def test_statistics_helpers():
+    assert bench.summarize([5.0, 1.0, 3.0, 2.0, 4.0]) == (3.0, 2.0)
+    with pytest.raises(ValueError):
+        bench.summarize([1.0])
+    with pytest.raises(ValueError):
+        bench.time_series(lambda: None, 0)
+    assert bench.time_series(lambda: None, 10) > 0
+    assert bench.throughput_mib_s(1048576, 1e9) == 1.0
+
+
+def test_raw_rows_aggregate_consistently():
+    rows = [dict(algorithm="sha256", mode="whole", payload_bytes=1024, series=i + 1,
+                 repeats=1000, elapsed_ns=t, ns_per_op=t / 1000)
+            for i, t in enumerate([1_000_000, 2_000_000, 3_000_000, 4_000_000, 5_000_000])]
+    (result,) = bench.aggregate_raw(rows)
+    assert result["median_ns"] == 3000.0 and result["iqr_ns"] == 2000.0
+    assert result["throughput_mib_s"] == 1024 * 1e9 / (2**20 * 3000.0)
+
+
+def test_dirty_working_tree_blocks_experiment(monkeypatch):
+    monkeypatch.setattr(bench, "_git", lambda *args: " M app/main.py" if args[0] == "status" else "a" * 40)
+    with pytest.raises(SystemExit):
+        bench.clean_source_commit()

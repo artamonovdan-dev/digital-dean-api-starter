@@ -2,7 +2,7 @@
   "info": {
     "name": "Digital Dean Practical 04",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Student starter checks; own implementation and own measured report required."
+    "description": "Variant 1 (payload_bytes). Run after python -m benchmarks.hash_benchmark. Leave manual_state empty for normal runs."
   },
   "variable": [
     {
@@ -11,7 +11,7 @@
     },
     {
       "key": "variant",
-      "value": "0"
+      "value": "1"
     },
     {
       "key": "manual_state",
@@ -124,6 +124,66 @@
       ]
     },
     {
+      "name": "03B2 Size variant 1: 64",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/v1/lab/crypto/hash-benchmark-results?payload_bytes=64"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.collectionVariables.get(\"variant\") !== \"1\") { pm.execution.skipRequest(); }"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"size 64\",()=>{pm.response.to.have.status(200);const b=pm.response.json();const a=b.algorithms.filter(x=>x.available).length;",
+              "pm.expect(b.results).to.have.lengthOf(2*a);pm.expect(b.results.every(x=>x.payload_bytes===64)).to.eql(true);",
+              "pm.expect(b.algorithms).to.have.lengthOf(7);pm.expect(b.avalanche).to.have.lengthOf(a);pm.expect(b.checks).to.have.lengthOf(6*a);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03B3 Size variant 1: 1048576",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/v1/lab/crypto/hash-benchmark-results?payload_bytes=1048576"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.collectionVariables.get(\"variant\") !== \"1\") { pm.execution.skipRequest(); }"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"size 1048576\",()=>{pm.response.to.have.status(200);const b=pm.response.json();const a=b.algorithms.filter(x=>x.available).length;",
+              "pm.expect(b.results).to.have.lengthOf(2*a);pm.expect(b.results.every(x=>x.payload_bytes===1048576)).to.eql(true);",
+              "pm.expect(b.algorithms).to.have.lengthOf(7);pm.expect(b.avalanche).to.have.lengthOf(a);pm.expect(b.checks).to.have.lengthOf(6*a);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "03C Mode variant 2",
       "request": {
         "method": "GET",
@@ -213,6 +273,34 @@
         "method": "GET",
         "header": [],
         "url": "{{base_url}}/api/v1/lab/crypto/hash-benchmark-results?payload_bytes=65"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.collectionVariables.get(\"variant\") !== \"1\") { pm.execution.skipRequest(); }"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"422\",()=>pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04B2 Invalid size: not integer",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/v1/lab/crypto/hash-benchmark-results?payload_bytes=abc"
       },
       "event": [
         {

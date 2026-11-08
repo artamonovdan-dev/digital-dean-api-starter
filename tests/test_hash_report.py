@@ -133,6 +133,223 @@ def test_route_connected_to_same_existing_application():
     from app.main import app
     assert PATH in TestClient(app).get("/openapi.json").json()["paths"]
 
-# TODO Add tests of YOUR variant, missing matrix rows, timezone and raw/JSON
-# consistency, finite measurements, no benchmark import/call in the HTTP route,
-# and the earlier application's regressions. Do not delete or skip TODO tests.
+
+# --- власні перевірки схеми, API та варіанта 1 ----------------------------------------
+
+from pathlib import Path  # noqa: E402
+
+from app.main import app as main_app  # noqa: E402
+
+
+@pytest.fixture
+def report_on_disk(tmp_path, monkeypatch):
+    path = tmp_path / "report.json"
+
+    def write(data):
+        path.write_text(json.dumps(data), encoding="utf-8")
+
+    write(synthetic_report())
+    monkeypatch.setattr(hash_lab, "REPORT_PATH", path)
+    return write
+
+
+def get(params=None):
+    return TestClient(main_app).get(PATH, params=params)
+
+
+def test_missing_matrix_row_rejected():
+    data = synthetic_report()
+    data["results"].pop()
+    with pytest.raises(ValueError):
+        validate_report(data)
+
+
+def test_missing_check_rejected():
+    data = synthetic_report()
+    data["checks"].pop()
+    with pytest.raises(ValueError):
+        validate_report(data)
+
+
+@pytest.mark.parametrize("value,ok", [
+    ("2026-10-23T00:00:00Z", True), ("2026-10-23T00:00:00+00:00", True),
+    ("2026-10-23T00:00:00+02:00", False), ("2026-10-23 00:00:00", False),
+])
+def test_created_at_timezone(value, ok):
+    data = synthetic_report()
+    data["created_at"] = value
+    if ok:
+        validate_report(data)
+    else:
+        with pytest.raises(ValueError):
+            validate_report(data)
+
+
+@pytest.mark.parametrize("path,value", [
+    (("results", 0, "median_ns"), float("inf")),
+    (("results", 0, "iqr_ns"), -1.0),
+    (("results", 0, "median_ns"), 0.0),
+    (("avalanche", 0, "min_flipped_bits"), 200),
+    (("avalanche", 0, "digest_bits"), 128),
+    (("algorithms", 5, "implementation"), "test.fixture-but-unavailable"),
+])
+def test_rejects_non_finite_and_inconsistent_values(path, value):
+    data = synthetic_report()
+    target = data
+    for key in path[:-1]:
+        target = target[key]
+    target[path[-1]] = value
+    if path[1] == 5:  # md5 недоступний, але має implementation — невалідно
+        target["available"] = False
+        target["reason"] = "not_available_in_environment"
+    with pytest.raises(ValueError):
+        validate_report(data)
+
+
+def test_unavailable_legacy_with_fake_results_rejected():
+    data = synthetic_report()
+    row = next(x for x in data["algorithms"] if x["algorithm"] == "md5")
+    row.update(available=False, reason="not_available_in_environment", implementation=None)
+    with pytest.raises(ValueError):  # вимірювання недоступного профілю лишилися
+        validate_report(data)
+
+
+def test_api_full_report(report_on_disk):
+    response = get()
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body["results"]) == 56 and len(body["avalanche"]) == 7 and len(body["checks"]) == 42
+    assert body["summary"] is None
+
+
+def test_api_keeps_failed_check_visible(report_on_disk):
+    data = synthetic_report()
+    data["checks"][3]["passed"] = False
+    report_on_disk(data)
+    assert get().json()["checks"][3]["passed"] is False
+
+
+def test_api_safe_errors(tmp_path, monkeypatch):
+    monkeypatch.setattr(hash_lab, "REPORT_PATH", tmp_path / "absent.json")
+    assert get().json() == {"detail": "hash report not found"}
+    bad = tmp_path / "bad.json"
+    bad.write_text(json.dumps({**synthetic_report(), "results": []}), encoding="utf-8")
+    monkeypatch.setattr(hash_lab, "REPORT_PATH", bad)
+    response = get()
+    assert response.status_code == 500
+    assert response.json() == {"detail": "hash report invalid"}
+    assert str(tmp_path) not in response.text and "Traceback" not in response.text
+
+
+def test_route_does_not_run_or_import_benchmark(report_on_disk, monkeypatch):
+    import benchmarks.hash_benchmark as bench
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("experiment must not run from HTTP")
+
+    monkeypatch.setattr(bench, "run_experiment", forbidden)
+    assert get().status_code == 200
+    code = Path(hash_lab.__file__).read_text(encoding="utf-8").split('"""', 2)[2]
+    assert "benchmarks" not in code and "run_experiment" not in code
+
+
+def test_route_has_no_path_parameter(report_on_disk, tmp_path):
+    response = get({"path": str(tmp_path / "other.json")})
+    assert response.status_code == 200
+    params = main_app.openapi()["paths"][PATH]["get"]["parameters"]
+    assert [p["name"] for p in params] == ["payload_bytes"]
+
+
+def test_openapi_response_model():
+    schema = main_app.openapi()["paths"][PATH]["get"]["responses"]["200"]["content"]["application/json"]["schema"]
+    assert schema["$ref"].endswith("/HashResponse")
+
+
+# --- індивідуальний варіант 1: payload_bytes -------------------------------------------
+
+
+@pytest.mark.parametrize("size", PAYLOAD_SIZES)
+def test_variant_payload_filter(report_on_disk, size):
+    response = get({"payload_bytes": size})
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body["results"]) == 14  # 7 профілів × 2 способи
+    assert all(r["payload_bytes"] == size for r in body["results"])
+    assert len(body["algorithms"]) == 7 and len(body["avalanche"]) == 7 and len(body["checks"]) == 42
+
+
+def test_variant_filter_with_unavailable_legacy(report_on_disk):
+    data = synthetic_report()
+    for row in data["algorithms"]:
+        if row["algorithm"] in ("md5", "sha1"):
+            row.update(available=False, reason="not_available_in_environment", implementation=None)
+    for field in ("results", "avalanche", "checks"):
+        data[field] = [x for x in data[field] if x["algorithm"] not in ("md5", "sha1")]
+    report_on_disk(data)
+    body = get({"payload_bytes": 64}).json()
+    assert len(body["results"]) == 10  # 2A при A=5
+    assert len(body["algorithms"]) == 7
+
+
+@pytest.mark.parametrize("value", ["65", "0", "-64", "2048", "abc", "true", "1024.5"])
+def test_variant_invalid_payload_is_422(report_on_disk, value):
+    assert TestClient(main_app).get(f"{PATH}?payload_bytes={value}").status_code == 422
+
+
+def test_variant_422_before_reading_file(tmp_path, monkeypatch):
+    monkeypatch.setattr(hash_lab, "REPORT_PATH", tmp_path / "absent.json")
+    assert get({"payload_bytes": 65}).status_code == 422
+    assert get({"payload_bytes": 64}).status_code == 404
+
+
+def test_variant_full_validation_before_filter(report_on_disk):
+    data = synthetic_report()
+    next(r for r in data["results"] if r["payload_bytes"] == 65536)["throughput_mib_s"] = 1.0
+    report_on_disk(data)
+    # Помилка в рядку 65536 виявляється навіть при фільтрі 64.
+    assert get({"payload_bytes": 64}).status_code == 500
+
+
+def test_variant_documented_in_openapi():
+    (param,) = main_app.openapi()["paths"][PATH]["get"]["parameters"]
+    assert param["name"] == "payload_bytes" and param["in"] == "query" and param["required"] is False
+
+
+# --- регресії практичних 1–3 ------------------------------------------------------------
+
+
+def test_app_version_and_previous_routes():
+    assert main_app.version == "0.4.0"
+    paths = main_app.openapi()["paths"]
+    for route in ("/health", "/api/v1/students", "/api/v1/students/{student_id}",
+                  "/api/v1/students/{student_id}/secure-notes",
+                  "/api/v1/students/{student_id}/secure-notes/{note_id}",
+                  "/api/v1/lab/crypto/benchmark-results",
+                  "/api/v1/lab/crypto/asymmetric-benchmark-results", PATH):
+        assert route in paths
+
+
+def test_previous_variant_filter_still_works():
+    response = TestClient(main_app).get(
+        "/api/v1/lab/crypto/asymmetric-benchmark-results", params={"payload_bytes": 65})
+    assert response.status_code == 422
+
+
+def test_own_measured_files_are_consistent_if_present():
+    """Якщо власний експеримент уже запущено, raw.csv і report.json узгоджені."""
+    import csv
+    import benchmarks.hash_benchmark as bench
+
+    folder = Path(hash_lab.REPORT_PATH).parent
+    report_path, raw_path = folder / "report.json", folder / "raw.csv"
+    if not (report_path.exists() and raw_path.exists()):
+        return
+    report = validate_report(json.loads(report_path.read_text(encoding="utf-8")))
+    with raw_path.open(encoding="utf-8") as stream:
+        rows = list(csv.DictReader(stream))
+    assert len(rows) == 5 * len(report.results)
+    recomputed = {(r["algorithm"], r["mode"], r["payload_bytes"]): r for r in bench.aggregate_raw(rows)}
+    for result in report.results:
+        expected = recomputed[(result.algorithm, result.mode, result.payload_bytes)]
+        assert result.median_ns == pytest.approx(expected["median_ns"])
+        assert result.iqr_ns == pytest.approx(expected["iqr_ns"])

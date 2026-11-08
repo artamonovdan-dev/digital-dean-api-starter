@@ -1,4 +1,4 @@
-# Digital Dean API — практичні роботи 1, 2 і 3
+# Digital Dean API — практичні роботи 1–4
 
 Навчальний API інформаційної системи «Цифровий деканат» (FastAPI + Pydantic 2).
 Лише синтетичні дані; сховище в пам'яті — дані зникають після перезапуску.
@@ -158,3 +158,25 @@ python -m uvicorn app.main:app --reload
 
 Маршрут лише читає `results/practice-03/report.json`, не запускає експеримент і не приймає шлях файлу.
 `payload_bytes=64` → 4 результати прямого RSA; 1024/65536/1048576 → по 6 гібридних. `key_generation` і `checks` завжди повні.
+
+---
+
+# Практична робота 4 — алгоритми хешування
+
+**Індивідуальний варіант роботи 4: 1 — фільтр `payload_bytes`** (64, 1024, 65536, 1048576).
+
+```bash
+python -m pytest
+git status --short                 # має бути порожньо перед експериментом
+python -m benchmarks.hash_benchmark  # raw.csv, avalanche.csv, report.json
+python -m benchmarks.plot_hash       # throughput.svg, avalanche.svg, summary.md
+python -m uvicorn app.main:app --reload
+```
+
+Профілі: sha256, sha512, sha3-256, blake2b-256, blake2s-256 (`digest_size=32`), md5 і sha1 (лише навчальне порівняння, `usedforsecurity=False`).
+Способи: `whole` — один `update`; `chunked` — блоки по 16384 байти, нарізані поза таймером. Кожен виклик створює новий стан хеш-функції.
+
+`GET /api/v1/lab/crypto/hash-benchmark-results[?payload_bytes=N]` → `HashResponse`:
+200 (спершу повна перевірка `HashReport`, потім фільтр лише `results`), 404 `hash report not found`,
+500 `hash report invalid`, 422 для `payload_bytes` поза переліком. `algorithms`, `avalanche`, `checks` завжди повні.
+Маршрут не запускає експеримент і не приймає шлях файлу.
