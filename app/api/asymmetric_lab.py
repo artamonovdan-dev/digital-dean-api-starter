@@ -1,9 +1,21 @@
-"""Додайте новий маршрут та підключення до наявного app/main.py."""
+"""Новий маршрут практичної 3: лише читає й перевіряє збережений звіт.
+
+Маршрут не імпортує і не запускає benchmarks, не приймає шлях файлу,
+алгоритм чи розмір експерименту від клієнта.
+"""
 import json
 from pathlib import Path
-from fastapi import APIRouter, HTTPException
+from typing import Annotated
+
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import ValidationError
-from app.schemas.asymmetric_report import BenchmarkReport, validate_complete_report
+
+from app.schemas.asymmetric_report import (
+    ALLOWED_PAYLOAD_BYTES,
+    BenchmarkReport,
+    BenchmarkResponse,
+    validate_complete_report,
+)
 
 router = APIRouter(prefix="/api/v1/lab/crypto", tags=["asymmetric-lab"])
 REPORT_PATH = Path(__file__).resolve().parents[2] / "results/practice-03/report.json"
@@ -38,8 +50,40 @@ def load_report() -> BenchmarkReport:
         raise HTTPException(500, "benchmark report invalid") from exc
 
 
-def get_asymmetric_benchmark_results() -> BenchmarkReport:
-    # TODO register @router.get("/asymmetric-benchmark-results", response_model=...)
-    # TODO return validated report and implement the individual variant.
-    # Do not import/run the benchmark here or accept a client file path.
-    raise NotImplementedError("Implement the new API operation")
+@router.get(
+    "/asymmetric-benchmark-results",
+    response_model=BenchmarkResponse,
+    summary="Результати власного експерименту асиметричного шифрування",
+    responses={
+        404: {"description": "Звіт ще не створено"},
+        422: {"description": "Неприйнятне значення payload_bytes"},
+        500: {"description": "Звіт некоректний"},
+    },
+)
+def get_asymmetric_benchmark_results(
+    payload_bytes: Annotated[
+        int | None,
+        Query(
+            description="Варіант 1: фільтр results за розміром повідомлення "
+                        "(64, 1024, 65536 або 1048576 байтів)",
+            examples=[1024],
+        ),
+    ] = None,
+) -> BenchmarkResponse:
+    # Варіант 1: int + явна серверна перевірка дозволеного переліку.
+    if payload_bytes is not None and payload_bytes not in ALLOWED_PAYLOAD_BYTES:
+        raise HTTPException(
+            status_code=422,
+            detail=[{
+                "type": "enum",
+                "loc": ["query", "payload_bytes"],
+                "msg": "payload_bytes must be one of 64, 1024, 65536, 1048576",
+                "input": payload_bytes,
+            }],
+        )
+    # Спочатку повний файл проходить BenchmarkReport і семантичну перевірку.
+    report = load_report()
+    data = report.model_dump()
+    if payload_bytes is not None:
+        data["results"] = [r for r in data["results"] if r["payload_bytes"] == payload_bytes]
+    return BenchmarkResponse.model_validate(data)
