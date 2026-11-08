@@ -11,8 +11,8 @@
       65536,
       1048576
     ],
-    "source_commit": "2a8cc761e5c2e105c0c0d23337cfac4ab5650a43",
-    "created_at_utc": "2026-11-08T12:57:16Z"
+    "source_commit": "74b40c41c798300dca1d33cedf334cbd606a8696",
+    "created_at_utc": "2026-11-08T12:58:27Z"
   },
   "environment": {
     "python": "3.13.17",
@@ -25,29 +25,29 @@
     {
       "key_profile": "rsa-2048",
       "runs": 5,
-      "median_ns": 23810000.0,
-      "iqr_ns": 15230100.0,
+      "median_ns": 36785300.0,
+      "iqr_ns": 4169200.0,
       "public_key_der_bytes": 294
     },
     {
       "key_profile": "rsa-3072",
       "runs": 5,
-      "median_ns": 119607600.0,
-      "iqr_ns": 185961700.0,
+      "median_ns": 55477700.0,
+      "iqr_ns": 27008100.0,
       "public_key_der_bytes": 422
     },
     {
       "key_profile": "x25519",
       "runs": 5,
-      "median_ns": 53500.0,
-      "iqr_ns": 5900.0,
+      "median_ns": 50700.0,
+      "iqr_ns": 40900.0,
       "public_key_der_bytes": 44
     },
     {
       "key_profile": "p256",
       "runs": 5,
-      "median_ns": 41200.0,
-      "iqr_ns": 6700.0,
+      "median_ns": 38900.0,
+      "iqr_ns": 11300.0,
       "public_key_der_bytes": 91
     }
   ],
@@ -59,8 +59,8 @@
       "payload_bytes": 64,
       "series": 5,
       "operations_per_series": 20,
-      "median_ns": 22250.0,
-      "iqr_ns": 30.0,
+      "median_ns": 22650.0,
+      "iqr_ns": 2145.0,
       "ciphertext_bytes": 256,
       "throughput_mib_s": null
     },
@@ -71,8 +71,8 @@
       "payload_bytes": 64,
       "series": 5,
       "operations_per_series": 20,
-      "median_ns": 439570.0,
-      "iqr_ns": 8375.0,
+      "median_ns": 451645.0,
+      "iqr_ns": 14650.0,
       "ciphertext_bytes": 256,
       "throughput_mib_s": null
     },
@@ -83,8 +83,8 @@
       "payload_bytes": 64,
       "series": 5,
       "operations_per_series": 20,
-      "median_ns": 38285.0,
-      "iqr_ns": 845.0,
+      "median_ns": 37525.0,
+      "iqr_ns": 4415.0,
       "ciphertext_bytes": 384,
       "throughput_mib_s": null
     },
@@ -95,8 +95,8 @@
       "payload_bytes": 64,
       "series": 5,
       "operations_per_series": 20,
-      "median_ns": 1349835.0,
-      "iqr_ns": 23240.0,
+      "median_ns": 1359515.0,
+      "iqr_ns": 48450.0,
       "ciphertext_bytes": 384,
       "throughput_mib_s": null
     },
@@ -107,10 +107,10 @@
       "payload_bytes": 1024,
       "series": 5,
       "operations_per_series": 20,
-      "median_ns": 45425.0,
-      "iqr_ns": 3580.0,
+      "median_ns": 41365.0,
+      "iqr_ns": 1170.0,
       "ciphertext_bytes": 1436,
-      "throughput_mib_s": 21.49834892680242
+      "throughput_mib_s": 23.608424996978123
     },
     {
       "profile": "rsa3072-oaep-aes256gcm",
@@ -119,10 +119,10 @@
       "payload_bytes": 1024,
       "series": 5,
       "operations_per_series": 20,
-      "median_ns": 1348085.0,
-      "iqr_ns": 24780.0,
+      "median_ns": 1401600.0,
+      "iqr_ns": 101915.0,
       "ciphertext_bytes": 1436,
-      "throughput_mib_s": 0.7244072146785997
+      "throughput_mib_s": 0.6967483590182648
     },
     {
       "profile": "rsa3072-oaep-aes256gcm",
@@ -131,10 +131,10 @@
       "payload_bytes": 65536,
       "series": 5,
       "operations_per_series": 20,
-      "median_ns": 77320.0,
-      "iqr_ns": 3760.0,
+      "median_ns": 67965.0,
+      "iqr_ns": 4600.0,
       "ciphertext_bytes": 65948,
-      "throughput_mib_s": 808.3290222452147
+      "throughput_mib_s": 919.5909659383507
     },
     {
       "profile": "rsa3072-oaep-aes256gcm",
@@ -143,10 +143,10 @@
       "payload_bytes": 65536,
       "series": 5,
       "operations_per_series": 20,
-      "median_ns": 1404560.0,
-      "iqr_ns": 56180.0,
+      "median_ns": 1408250.0,
+      "iqr_ns": 12200.0,
       "ciphertext_bytes": 65948,
-      "throughput_mib_s": 44.49792105712821
+      "throughput_mib_s": 44.381324338718265
     },
     {
       "profile": "rsa3072-oaep-aes256gcm",
@@ -155,10 +155,10 @@
       "payload_bytes": 1048576,
       "series": 5,
       "operations_per_series": 20,
-      "median_ns": 679915.0,
-      "iqr_ns": 13250.0,
+      "median_ns": 625060.0,
+      "iqr_ns": 30915.0,
       "ciphertext_bytes": 1048988,
-      "throughput_mib_s": 1470.772081804343
+      "throughput_mib_s": 1599.8464147441846
     },
     {
       "profile": "rsa3072-oaep-aes256gcm",
@@ -167,10 +167,10 @@
       "payload_bytes": 1048576,
       "series": 5,
       "operations_per_series": 20,
-      "median_ns": 1942525.0,
-      "iqr_ns": 39300.0,
+      "median_ns": 1958220.0,
+      "iqr_ns": 43060.0,
       "ciphertext_bytes": 1048988,
-      "throughput_mib_s": 514.7938893965329
+      "throughput_mib_s": 510.66785141608193
     },
     {
       "profile": "hpke-x25519-aes256gcm",
@@ -179,10 +179,10 @@
       "payload_bytes": 1024,
       "series": 5,
       "operations_per_series": 20,
-      "median_ns": 73755.0,
-      "iqr_ns": 860.0,
+      "median_ns": 67490.0,
+      "iqr_ns": 670.0,
       "ciphertext_bytes": 1072,
-      "throughput_mib_s": 13.240627754050573
+      "throughput_mib_s": 14.469736257223293
     },
     {
       "profile": "hpke-x25519-aes256gcm",
@@ -191,10 +191,10 @@
       "payload_bytes": 1024,
       "series": 5,
       "operations_per_series": 20,
-      "median_ns": 42965.0,
-      "iqr_ns": 840.0,
+      "median_ns": 43450.0,
+      "iqr_ns": 5085.0,
       "ciphertext_bytes": 1072,
-      "throughput_mib_s": 22.729256371465144
+      "throughput_mib_s": 22.47554660529344
     },
     {
       "profile": "hpke-x25519-aes256gcm",
@@ -203,10 +203,10 @@
       "payload_bytes": 65536,
       "series": 5,
       "operations_per_series": 20,
-      "median_ns": 107745.0,
-      "iqr_ns": 440.0,
+      "median_ns": 95720.0,
+      "iqr_ns": 4175.0,
       "ciphertext_bytes": 65584,
-      "throughput_mib_s": 580.0733212678083
+      "throughput_mib_s": 652.9460927705809
     },
     {
       "profile": "hpke-x25519-aes256gcm",
@@ -215,10 +215,10 @@
       "payload_bytes": 65536,
       "series": 5,
       "operations_per_series": 20,
-      "median_ns": 69965.0,
-      "iqr_ns": 13575.0,
+      "median_ns": 73630.0,
+      "iqr_ns": 5590.0,
       "ciphertext_bytes": 65584,
-      "throughput_mib_s": 893.3037947545201
+      "throughput_mib_s": 848.838788537281
     },
     {
       "profile": "hpke-x25519-aes256gcm",
@@ -227,10 +227,10 @@
       "payload_bytes": 1048576,
       "series": 5,
       "operations_per_series": 20,
-      "median_ns": 723190.0,
-      "iqr_ns": 1490.0,
+      "median_ns": 715575.0,
+      "iqr_ns": 35875.0,
       "ciphertext_bytes": 1048624,
-      "throughput_mib_s": 1382.7624828883143
+      "throughput_mib_s": 1397.4775530168047
     },
     {
       "profile": "hpke-x25519-aes256gcm",
@@ -239,10 +239,10 @@
       "payload_bytes": 1048576,
       "series": 5,
       "operations_per_series": 20,
-      "median_ns": 402085.0,
-      "iqr_ns": 19695.0,
+      "median_ns": 406360.0,
+      "iqr_ns": 13490.0,
       "ciphertext_bytes": 1048624,
-      "throughput_mib_s": 2487.0363231654997
+      "throughput_mib_s": 2460.872133083965
     },
     {
       "profile": "hpke-p256-aes256gcm",
@@ -251,10 +251,10 @@
       "payload_bytes": 1024,
       "series": 5,
       "operations_per_series": 20,
-      "median_ns": 88165.0,
-      "iqr_ns": 5460.0,
+      "median_ns": 86975.0,
+      "iqr_ns": 16920.0,
       "ciphertext_bytes": 1105,
-      "throughput_mib_s": 11.07653263766801
+      "throughput_mib_s": 11.228082782408737
     },
     {
       "profile": "hpke-p256-aes256gcm",
@@ -263,10 +263,10 @@
       "payload_bytes": 1024,
       "series": 5,
       "operations_per_series": 20,
-      "median_ns": 71530.0,
-      "iqr_ns": 370.0,
+      "median_ns": 78930.0,
+      "iqr_ns": 8125.0,
       "ciphertext_bytes": 1105,
-      "throughput_mib_s": 13.652488466377743
+      "throughput_mib_s": 12.372513619662993
     },
     {
       "profile": "hpke-p256-aes256gcm",
@@ -275,10 +275,10 @@
       "payload_bytes": 65536,
       "series": 5,
       "operations_per_series": 20,
-      "median_ns": 127245.0,
-      "iqr_ns": 17925.0,
+      "median_ns": 119165.0,
+      "iqr_ns": 12330.0,
       "ciphertext_bytes": 65617,
-      "throughput_mib_s": 491.1784353019765
+      "throughput_mib_s": 524.4828599001385
     },
     {
       "profile": "hpke-p256-aes256gcm",
@@ -287,10 +287,10 @@
       "payload_bytes": 65536,
       "series": 5,
       "operations_per_series": 20,
-      "median_ns": 99180.0,
-      "iqr_ns": 12790.0,
+      "median_ns": 101350.0,
+      "iqr_ns": 9430.0,
       "ciphertext_bytes": 65617,
-      "throughput_mib_s": 630.1673724541238
+      "throughput_mib_s": 616.67488899852
     },
     {
       "profile": "hpke-p256-aes256gcm",
@@ -299,10 +299,10 @@
       "payload_bytes": 1048576,
       "series": 5,
       "operations_per_series": 20,
-      "median_ns": 722385.0,
-      "iqr_ns": 88080.0,
+      "median_ns": 759130.0,
+      "iqr_ns": 62575.0,
       "ciphertext_bytes": 1048657,
-      "throughput_mib_s": 1384.303383929622
+      "throughput_mib_s": 1317.2974325873038
     },
     {
       "profile": "hpke-p256-aes256gcm",
@@ -311,10 +311,10 @@
       "payload_bytes": 1048576,
       "series": 5,
       "operations_per_series": 20,
-      "median_ns": 449395.0,
-      "iqr_ns": 36040.0,
+      "median_ns": 417480.0,
+      "iqr_ns": 3310.0,
       "ciphertext_bytes": 1048657,
-      "throughput_mib_s": 2225.2138986860114
+      "throughput_mib_s": 2395.3243269138643
     }
   ],
   "checks": [
