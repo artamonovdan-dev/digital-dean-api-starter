@@ -1,7 +1,15 @@
 """Структура звіту; змістову перевірку validate_report реалізує студент."""
+import math
+from datetime import datetime, timedelta
 from typing import Annotated, Literal
+
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, StrictInt
-from app.security.hashing.profiles import AlgorithmID, Mode
+
+from app.security.hashing.profiles import (
+    CHECK_NAMES, PAYLOAD_SIZES, PROFILES, AlgorithmID, Mode, repeat_count,
+)
+
+MODES = ("whole", "chunked")
 
 
 def _exact_int(value):
@@ -103,14 +111,80 @@ class HashReport(StrictModel):
 
 
 class HashResponse(HashReport):
-    # Filtering may return fewer results; full disk report must stay complete.
+    """Відповідь API. Повний файл спочатку проходить validate_report; потім
+    варіант 1 (payload_bytes) фільтрує лише results. algorithms, avalanche
+    і checks залишаються повними; summary для варіанта 1 — null."""
+
     results: list[PerformanceResult] = Field(max_length=56)
     summary: Summary | None = None
 
 
+def _require(condition: bool, message: str) -> None:
+    if not condition:
+        raise ValueError(message)
+
+
+def _is_utc_moment(value: str) -> bool:
+    """Чинний момент UTC із Z або +00:00; дата перевіряється розбором."""
+    if not (value.endswith("Z") or value.endswith("+00:00")):
+        return False
+    try:
+        moment = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    return moment.utcoffset() == timedelta(0)
+
+
 def validate_report(data: object) -> HashReport:
-    # TODO HashReport.model_validate, then exact coverage and unique tuples.
-    # TODO allowed unavailable states, real UTC date, sizes, digest lengths,
-    # repeats, throughput, avalanche bounds/fractions, and check coverage.
-    # A passed=False check is valid diagnostic data and must not disappear.
-    raise NotImplementedError("Implement complete hash report validation")
+    """Структура (Pydantic) + повне змістове покриття звіту.
+
+    Піднімає ValueError (ValidationError — його підклас). Перевірки з
+    passed=False є допустимими діагностичними даними й не вилучаються.
+    """
+    report = HashReport.model_validate(data)
+
+    _require(_is_utc_moment(report.created_at), "created_at must be a valid UTC moment")
+    params = report.parameters
+    _require(params.sizes == list(PAYLOAD_SIZES), "unexpected payload sizes")
+
+    # Статуси: рівно сім унікальних; недоступними можуть бути лише md5/sha1.
+    names = [row.algorithm for row in report.algorithms]
+    _require(len(set(names)) == len(names) and set(names) == set(PROFILES), "algorithm coverage")
+    available = set()
+    for row in report.algorithms:
+        if row.available:
+            _require(row.reason is None and bool(row.implementation), "available status")
+            available.add(row.algorithm)
+        else:
+            _require(PROFILES[row.algorithm].legacy, "required profile unavailable")
+            _require(row.reason == "not_available_in_environment" and row.implementation is None,
+                     "unavailable status")
+
+    # Швидкодія: повна матриця доступних профілів × 4 розміри × 2 способи.
+    keys = [(r.algorithm, r.mode, r.payload_bytes) for r in report.results]
+    expected = {(a, m, s) for a in available for m in MODES for s in PAYLOAD_SIZES}
+    _require(len(set(keys)) == len(keys), "duplicate result")
+    _require(set(keys) == expected, "result coverage")
+    for r in report.results:
+        _require(r.digest_bytes == PROFILES[r.algorithm].digest_bytes, "digest length")
+        _require(r.repeats == repeat_count(r.payload_bytes), "repeat count")
+        _require(math.isfinite(r.median_ns) and math.isfinite(r.iqr_ns), "finite timing")
+        formula = r.payload_bytes * 1e9 / (2**20 * r.median_ns)
+        _require(math.isclose(r.throughput_mib_s, formula, rel_tol=1e-9), "throughput formula")
+
+    # Лавинний ефект: один агрегат на кожен доступний профіль.
+    algs = [a.algorithm for a in report.avalanche]
+    _require(len(set(algs)) == len(algs) and set(algs) == available, "avalanche coverage")
+    for a in report.avalanche:
+        bits = 8 * PROFILES[a.algorithm].digest_bytes
+        _require(a.digest_bits == bits, "avalanche digest bits")
+        _require(a.min_flipped_bits <= a.mean_flipped_bits <= a.max_flipped_bits <= bits,
+                 "avalanche bounds")
+        _require(math.isclose(a.mean_fraction, a.mean_flipped_bits / bits, rel_tol=1e-9, abs_tol=1e-12),
+                 "avalanche fraction")
+
+    # Перевірки: шість назв рівно один раз для кожного доступного профілю.
+    pairs = [(c.algorithm, c.name) for c in report.checks]
+    _require(len(set(pairs)) == len(pairs), "duplicate check")
+    _require(set(pairs) == {(a, n) for a in available for n in CHECK_NAMES}, "check coverage")
+    return report
